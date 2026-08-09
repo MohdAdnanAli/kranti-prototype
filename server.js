@@ -323,12 +323,13 @@ const so = db.prepare(`
     LEFT JOIN transporter t ON so.transporter_id = t.id
     WHERE so.id = ?
   `).get(req.params.soId);
-  if (!so) return res.status(404).json({ error: 'Not found' });
+if (!so) return res.status(404).json({ error: 'Not found' });
   so.status = effectiveSOStatus(so);
   const items = db.prepare('SELECT * FROM deal_item WHERE deal_id = ?').all(so.deal_id);
   const terms = db.prepare('SELECT * FROM terms_condition WHERE org_id = 1 LIMIT 1').get();
   const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(so.id);
-  res.json({ so, items, terms, ack });
+  const seller = db.prepare('SELECT name, gstin FROM organization WHERE id = 1').get();
+  res.json({ so, items, terms, ack, seller });
 });
 
 // Seller sets invoice number + date, runs OCR-adapter cross-check, flushes the draft ack rec.

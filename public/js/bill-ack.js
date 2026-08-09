@@ -27,12 +27,26 @@ function render(d) {
     return;
   }
 
-  const items = d.items;
+const items = d.items;
   const total = items.reduce((s, i) => s + i.qty * i.price, 0);
 
+const seller = d.seller || {};
   main.innerHTML = `
+    <div class="sealed-bill">
+    ${d.ack.ocr_verified ? `
+      <div class="watermark">
+        <div class="band">Verified ✓</div>
+        <div class="band">Verified ✓</div>
+        <div class="band">Verified ✓</div>
+        <div class="band">Verified ✓</div>
+        <div class="band">Verified ✓</div>
+      </div>` : ''}
     <h2 class="section-title">Order ${so.order_code} — Invoice ${d.ack.invoice_number}</h2>
-    <div class="field-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
+    <div class="field-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:14px;">
+      <fieldset>
+        <legend>Seller</legend>
+        <b>${seller.name || '—'}</b><br>GSTIN: ${seller.gstin || '—'}
+      </fieldset>
       <fieldset>
         <legend>Buyer</legend>
         <b>${so.buyer_name}</b><br>${so.buyer_gstin || ''}<br>${so.buyer_phone || ''}
@@ -62,10 +76,11 @@ function render(d) {
       <pre style="white-space:pre-wrap; font-family:inherit; margin:0;">${d.terms ? d.terms.content : 'No terms attached.'}</pre>
     </fieldset>
 
-    <fieldset>
+<fieldset>
       <legend>Acknowledgement</legend>
       <div id="verifySection"></div>
     </fieldset>
+    </div>
   `;
 
   renderVerification(d);

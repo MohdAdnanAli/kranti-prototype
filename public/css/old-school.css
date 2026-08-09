@@ -360,3 +360,52 @@ a { color: var(--link); }
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+/* ---- Sealed / OCR-verified bill watermark ---- */
+.sealed-bill {
+  position: relative;
+  overflow: hidden;
+}
+.watermark {
+  position: absolute;
+  inset: -20%;
+  /* Greater coverage than the box so the rotated bands span the full page. */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  transform: rotate(-24deg);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.16;
+  user-select: none;
+}
+.watermark .band {
+  font-size: 64px;
+  font-weight: 900;
+  color: var(--ok);
+  text-transform: uppercase;
+  letter-spacing: 14px;
+  white-space: nowrap;
+  text-shadow: 0 0 2px rgba(0,0,0,0.15);
+}
+.watermark .band small {
+  font-size: 40px;
+  letter-spacing: 6px;
+  font-weight: bold;
+}
+.sealed-bill .stamp {
+  position: relative;
+  z-index: 6;
+  background: rgba(255,255,255,0.55);
+}
+
+/* ---- QR code next to buyer acknowledgement link ---- */
+.qr-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qr-wrap canvas { border: 1px solid var(--grid); background: #fff; }
+.qr-caption { font-size: 11px; color: #555; max-width: 140px; }

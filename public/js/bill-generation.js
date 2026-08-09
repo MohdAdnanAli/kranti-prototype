@@ -30,6 +30,10 @@ async function loadBill(id) {
   document.getElementById('orderCode').textContent = d.so.order_code || '—';
   document.getElementById('billCode').textContent = d.so.sequential_code;
 
+const seller = d.seller || {};
+  document.getElementById('sellerInfo').innerHTML =
+    `<b>${seller.name || '—'}</b><br>GSTIN: ${seller.gstin || '—'}`;
+
   document.getElementById('buyerInfo').innerHTML =
     `<b>${d.so.buyer_name}</b><br>${d.so.buyer_gstin}<br>${d.so.buyer_phone}${d.so.buyer_email ? '<br>' + d.so.buyer_email : ''}<br><span class="muted">${d.so.buyer_address}</span>`;
   document.getElementById('agentInfo').innerHTML = d.so.agent_name
@@ -54,8 +58,26 @@ document.getElementById('billItems').innerHTML = d.items.map((i, idx) => `
     document.getElementById('invoiceDate').value = new Date().toISOString().slice(0, 10);
   }
 
-  const buyerLink = `${window.location.origin}/bill-ack.html?so=${id}`;
+const buyerLink = `${window.location.origin}/bill-ack.html?so=${id}`;
   document.getElementById('buyerLinkBox').value = buyerLink;
+
+  // Render QR code for the buyer acknowledgement link.
+  const qrCanvas = document.getElementById('buyerLinkQr');
+  if (qrCanvas && window.QRCode) {
+    try {
+      const qrcode = new window.QRCode();
+      const matrix = qrcode.make(buyerLink);
+      qrcode.draw(qrCanvas, matrix, 120);
+    } catch (e) {
+      // QR generation failed silently — link still works.
+    }
+  }
+
+  // Show the diagonal "VERIFIED" seal preview when OCR cross-check passed.
+  const watermark = document.getElementById('billWatermark');
+  if (watermark) {
+    watermark.style.display = (d.ack && d.ack.ocr_verified) ? 'flex' : 'none';
+  }
 
   if (d.ack && d.ack.invoice_number) {
     document.getElementById('buyerLinkFieldset').style.display = 'block';
@@ -70,10 +92,13 @@ document.getElementById('ocrRunBtn').addEventListener('click', () => {
   const file = document.getElementById('ocrFile').files[0];
   const result = document.getElementById('ocrResult');
   if (!file) { result.textContent = 'Choose a file first (demo only — any image works).'; return; }
-  result.textContent = 'Scanning…';
+result.textContent = 'Scanning…';
   setTimeout(() => {
     result.innerHTML = '<span style="color:#0B6B0B; font-weight:bold;">✓ Matched — scanned figures align with recorded deal.</span>';
     window._ocrVerified = true;
+    // Show live seal preview once OCR cross-check passes.
+    const watermark = document.getElementById('billWatermark');
+    if (watermark) watermark.style.display = 'flex';
   }, 900);
 });
 

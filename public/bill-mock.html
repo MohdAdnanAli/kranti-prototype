@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kranti — Bill Seal Mock Preview</title>
+<link rel="stylesheet" href="css/old-school.css">
+<style>
+  .mock-controls { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .mock-controls label { display: flex; align-items: center; gap: 6px; font-weight: bold; }
+  .mock-controls input { width: auto; }
+</style>
+</head>
+<body>
+<div class="app-window">
+  <div class="titlebar">
+    <span class="icon"></span>
+    <span class="title-text">Kranti — Bill Seal Mock Preview (standalone test)</span>
+  </div>
+
+  <div class="content">
+    <div class="mock-controls">
+      <label><input type="checkbox" id="mockOcr"> OCR Verified</label>
+      <label><input type="checkbox" id="mockOtp"> OTP Verified (Final Stamp)</label>
+    </div>
+
+    <div id="mockBill"></div>
+  </div>
+
+  <div class="statusbar">
+    <div class="grow">Toggle the checkboxes to preview the diagonal "VERIFIED" seal and the final stamp.</div>
+  </div>
+</div>
+
+<script src="js/bill-mock.js"></script>
+</body>
+</html>
