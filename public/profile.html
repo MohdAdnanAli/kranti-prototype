@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kranti — Profile</title>
+<link rel="stylesheet" href="css/old-school.css">
+</head>
+<body>
+<div class="app-window">
+  <div class="titlebar">
+    <span class="icon"></span>
+    <span class="title-text">Kranti Business Suite — Seller Profile</span>
+
+  </div>
+  <div class="toolbar" id="navToolbar"></div>
+
+  <div class="content">
+    <!-- 1. Seller Details -->
+    <h2 class="section-title">1. Seller Details</h2>
+    <div>
+      <fieldset>
+        <legend>Organization</legend>
+        <div class="field-grid" id="orgFields"></div>
+        <div class="hbox" style="margin-top:10px;">
+          <button id="saveOrgBtn" class="primary">Save Changes</button>
+          <span class="muted" id="orgSavedMsg" style="display:none;">Saved.</span>
+        </div>
+      </fieldset>
+    </div>
+
+<!-- 2a. Buyers -->
+    <h2 class="section-title" id="buyersSection">2a. Buyers</h2>
+    <div>
+      <div id="buyerCrud"></div>
+    </div>
+
+    <!-- 2b. Agents -->
+    <h2 class="section-title">2b. Agents</h2>
+    <div>
+      <div id="agentCrud"></div>
+    </div>
+
+    <!-- 2c. Transporters -->
+    <h2 class="section-title">2c. Transporters</h2>
+    <div>
+      <div id="transCrud"></div>
+    </div>
+
+    <!-- 3. Terms & Conditions -->
+    <h2 class="section-title">3. Terms &amp; Conditions</h2>
+    <div>
+      <p class="muted" style="margin-bottom:10px;">Saved Terms &amp; Conditions sets — attach one to a Sauda or Bill at generation time.</p>
+      <button id="addTcBtn" style="margin-bottom:10px;">+ New T&amp;C Set</button>
+      <div id="tcList"></div>
+    </div>
+
+    <!-- 4. Best Buys -->
+    <h2 class="section-title">4. Best Buys</h2>
+    <div>
+      <p class="muted" style="margin-bottom:10px;">Frequently used items — add straight into a new Sauda without re-typing.</p>
+      <div id="bestBuyCrud"></div>
+    </div>
+
+    <!-- 5. Note -->
+    <h2 class="section-title">5. Note</h2>
+    <div>
+      <fieldset>
+        <legend>Working Note</legend>
+        <textarea id="noteText" rows="8"></textarea>
+        <div class="hbox" style="margin-top:8px;">
+          <button id="saveNoteBtn" class="primary">Save Note</button>
+          <span class="muted" id="noteSavedMsg" style="display:none;">Saved.</span>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="grow" id="userStatus">Ready</div>
+    <div>Kranti v0.1 Prototype</div>
+    <div id="clockBox">--:--</div>
+  </div>
+</div>
+
+<script src="js/nav.js"></script>
+<script src="js/form-cache.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/section-collapse.js"></script>
+</body>
+</html>

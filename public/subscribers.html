@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kranti — Subscribers</title>
+<link rel="stylesheet" href="css/old-school.css">
+</head>
+<body>
+<div class="app-window">
+  <div class="titlebar">
+    <span class="icon"></span>
+    <span class="title-text">Kranti Business Suite — Subscribers &amp; Access</span>
+
+  </div>
+  <div class="toolbar" id="navToolbar"></div>
+
+  <div class="content">
+    <h2 class="section-title">Subscribers — Users with access to this subscription</h2>
+
+    <div class="filter-bar">
+      <label class="muted">Filter by status:</label>
+      <select id="statusFilter">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+      </select>
+      <label class="muted">Filter by role:</label>
+      <select id="roleFilter">
+        <option value="">All</option>
+        <option value="owner">Owner</option>
+        <option value="staff">Staff</option>
+      </select>
+      <button id="addUserBtn">+ Add User</button>
+    </div>
+
+    <table class="grid">
+      <thead>
+        <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Permissions</th><th>Status</th></tr>
+      </thead>
+      <tbody id="subsBody"></tbody>
+    </table>
+
+    <p class="muted" style="margin-top:10px;">
+      Owner accounts have full access to billing, subscribers, and organization settings. Staff accounts are
+      scoped by permission level — <b>limited</b> can create/edit Sauda and Purchase Orders; <b>view-only</b> can browse records only.
+    </p>
+  </div>
+
+  <div class="statusbar">
+    <div class="grow" id="userStatus">Ready</div>
+    <div id="countBox">0 subscribers</div>
+    <div id="clockBox">--:--</div>
+  </div>
+</div>
+
+  <script src="js/nav.js"></script>
+  <script src="js/subscribers.js"></script>
+  <script src="js/section-collapse.js"></script>
+</body>
+</html>

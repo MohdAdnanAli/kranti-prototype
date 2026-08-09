@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kranti — Bill Generation</title>
+<link rel="stylesheet" href="css/old-school.css">
+</head>
+<body>
+<div class="app-window">
+  <div class="titlebar">
+    <span class="icon"></span>
+    <span class="title-text">Kranti Business Suite — Bill Generation (Seller View)</span>
+  </div>
+  <div class="toolbar" id="navToolbar"></div>
+
+  <div class="content">
+    <div id="pickerView">
+      <h2 class="section-title">Bill Generation — Select a verified Purchase Order</h2>
+      <p class="muted">Only buyer-verified orders can move to bill generation.</p>
+      <table class="grid">
+        <thead><tr><th>Order</th><th>PO Code</th><th>Buyer</th><th>Status</th><th></th></tr></thead>
+        <tbody id="pickerBody"></tbody>
+      </table>
+    </div>
+
+    <div id="billView" style="display:none;">
+      <h2 class="section-title">Order <span id="orderCode"></span> — PO <span id="billCode"></span></h2>
+
+      <div class="field-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:14px;">
+        <fieldset><legend>Buyer</legend><div id="buyerInfo"></div></fieldset>
+        <fieldset><legend>Agent</legend><div id="agentInfo"></div></fieldset>
+        <fieldset><legend>Transporter</legend><div id="transInfo"></div></fieldset>
+      </div>
+
+      <fieldset>
+        <legend>Items</legend>
+        <table class="grid">
+<thead><tr><th>Sr. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th></tr></thead>
+          <tbody id="billItems"></tbody>
+        </table>
+      </fieldset>
+
+      <fieldset>
+        <legend>OCR Adapter — cross-check before invoice is flushed</legend>
+        <p class="muted">Upload a photo/scan of the physical invoice. The adapter cross-checks it against the recorded deal
+          before the invoice data is flushed into the sealed record. <i>(Demo stub — no real OCR call is made.)</i></p>
+        <div class="hbox">
+          <input type="file" id="ocrFile" accept="image/*">
+          <button id="ocrRunBtn">Run OCR Cross-Check</button>
+          <span id="ocrResult" class="muted"></span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Invoice Details</legend>
+        <div class="field-grid">
+          <div class="field-row">
+            <label class="f-label">Invoice Number</label>
+            <input type="text" id="invoiceNumber">
+          </div>
+          <div class="field-row">
+            <label class="f-label">Invoice Date</label>
+            <input type="date" id="invoiceDate">
+          </div>
+        </div>
+        <div class="hbox" style="margin-top:8px;">
+          <button class="primary" id="prepareBtn">Generate Invoice Ack Rec</button>
+          <span id="prepareMsg" class="muted"></span>
+        </div>
+      </fieldset>
+
+      <fieldset id="buyerLinkFieldset" style="display:none;">
+        <legend>Buyer Acknowledgement Link</legend>
+        <p class="muted">Share this link with the buyer — no login required. They'll trigger their own OTP to seal the document.</p>
+        <div class="hbox">
+          <input type="text" id="buyerLinkBox" readonly style="flex:1;">
+          <button id="copyLinkBtn">Copy Link</button>
+        </div>
+      </fieldset>
+
+      <fieldset id="statusFieldset" style="display:none;">
+        <legend>Verification Status (mirrors buyer's side)</legend>
+        <div id="statusBox"></div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="grow" id="userStatus">Ready</div>
+    <div>Kranti v0.2 Prototype</div>
+    <div id="clockBox">--:--</div>
+  </div>
+</div>
+
+  <script src="js/nav.js"></script>
+  <script src="js/bill-generation.js"></script>
+  <script src="js/section-collapse.js"></script>
+</body>
+</html>

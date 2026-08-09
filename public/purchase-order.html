@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kranti — Purchase Orders</title>
+<link rel="stylesheet" href="css/old-school.css">
+</head>
+<body>
+<div class="app-window">
+  <div class="titlebar">
+    <span class="icon"></span>
+    <span class="title-text">Kranti Business Suite — Purchase Orders</span>
+  </div>
+  <div class="toolbar" id="navToolbar"></div>
+
+  <div class="content">
+    <h2 class="section-title">Draft Deals — awaiting Purchase Order</h2>
+    <table class="grid">
+      <thead><tr><th>Order</th><th>Buyer</th><th>Delivery</th><th>Lifting Window</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="draftBody"></tbody>
+    </table>
+
+    <h2 class="section-title" style="margin-top:18px;">Purchase Orders — Structured chart of Sauda acquired</h2>
+
+    <div class="filter-bar">
+      <input type="text" id="searchBox" placeholder="Search buyer / order / code…">
+      <select id="statusFilterPO">
+        <option value="">All Status</option>
+        <option value="sent">Sent</option>
+        <option value="viewed">Viewed</option>
+        <option value="verified">Verified</option>
+        <option value="denied">Denied</option>
+        <option value="ignored">Ignored</option>
+        <option value="expired">Expired</option>
+      </select>
+      <select id="deliveryFilter">
+        <option value="">All Delivery</option>
+        <option value="EX">EX</option>
+        <option value="FOR">FOR</option>
+      </select>
+      <select id="paymentFilter">
+        <option value="">All Payment</option>
+        <option value="advance">Advance</option>
+        <option value="credit">Credit</option>
+        <option value="ratio">Ratio</option>
+      </select>
+      <input type="date" id="dateFrom" title="From generated date">
+      <input type="date" id="dateTo" title="To generated date">
+    </div>
+
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Order</th><th>PO Code</th><th>Buyer</th><th>Agent</th><th>Transporter</th>
+          <th>Delivery</th><th>Payment</th><th>Lifting Window</th><th>Status</th><th>Expiry</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="poBody"></tbody>
+    </table>
+  </div>
+
+  <div class="statusbar">
+    <div class="grow" id="userStatus">Ready</div>
+    <div id="countBox">0 records</div>
+    <div id="clockBox">--:--</div>
+  </div>
+</div>
+
+  <script src="js/nav.js"></script>
+  <script src="js/purchase-order.js"></script>
+  <script src="js/section-collapse.js"></script>
+</body>
+</html>

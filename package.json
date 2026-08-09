@@ -1,0 +1,18 @@
+{
+  "name": "kranti-prototype",
+  "version": "1.0.0",
+  "description": "Kranti - Bill Live Tracking Pipeline - Prototype 1",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node db/seed.js"
+  },
+  "trustedDependencies": [
+    "better-sqlite3"
+  ],
+  "dependencies": {
+    "express": "^4.19.2",
+    "better-sqlite3": "^11.3.0"
+  }
+}

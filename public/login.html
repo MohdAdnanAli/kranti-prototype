@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign in to Kranti</title>
+<link rel="stylesheet" href="css/apple-login.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="mark">K</div>
+    <h1>Sign in to Kranti</h1>
+    <p class="sub">Enter your account details to continue</p>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" value="adnan@xyz.com" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" value="Password@123" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
+    </form>
+
+    <div class="hint">
+      Demo account is pre-filled — <b>adnan@xyz.com</b><br>
+      Prototype 1 · not for production use
+    </div>
+
+    <div class="footer-links"><span>Forgot password?</span></div>
+  </div>
+
+<script src="js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  background: #ffffff;
+  color: #1d1d1f;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-wrap {
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+  text-align: center;
+}
+
+.mark {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 28px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #1d1d1f 0%, #000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.sub {
+  font-size: 14px;
+  color: #6e6e73;
+  margin-bottom: 32px;
+}
+
+.field {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: #6e6e73;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid #d2d2d7;
+  border-radius: 10px;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.field input:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+  background: #fff;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: #0071e3;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-primary:hover { background: #0077ed; }
+.btn-primary:active { background: #006edb; }
+.btn-primary:disabled { background: #b0d4f8; cursor: default; }
+
+.error-msg {
+  display: none;
+  background: #fff2f2;
+  color: #d70015;
+  border: 1px solid #ffd1d1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #86868b;
+  line-height: 1.6;
+}
+
+.hint b { color: #6e6e73; }
+
+.footer-links {
+  margin-top: 28px;
+  font-size: 12px;
+  color: #0071e3;
+}
+
+.footer-links span {
+  cursor: default;
+  opacity: 0.7;
+}

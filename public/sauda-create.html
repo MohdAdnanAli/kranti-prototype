@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kranti — Sauda Create</title>
+<link rel="stylesheet" href="css/old-school.css">
+</head>
+<body>
+<div class="app-window">
+  <div class="titlebar">
+    <span class="icon"></span>
+    <span class="title-text">Kranti Business Suite — New Order</span>
+  </div>
+  <div class="toolbar" id="navToolbar"></div>
+
+  <div class="content">
+    <h2 class="section-title">Sauda Create — one Order, one or more Buyers</h2>
+    <p class="muted" style="margin-bottom:12px;">
+      Each buyer added below becomes its own independent deal — its own Purchase Order, its own verification link,
+      its own Bill and OTP cycle — but all share this one <b>Order ID</b> for traceability.
+    </p>
+
+    <fieldset>
+      <legend>Order-level details</legend>
+      <div class="field-grid">
+        <div class="field-row">
+          <label class="f-label">Agent (optional — informal channel)</label>
+          <select id="agentSelect"></select>
+        </div>
+        <div class="field-row">
+          <label class="f-label">Order Notes</label>
+          <input type="text" id="orderNotes" placeholder="e.g. Combined dispatch, single truck">
+        </div>
+      </div>
+    </fieldset>
+
+    <div id="legsContainer"></div>
+
+    <button type="button" id="addLegBtn" style="margin:10px 0;">+ Add Another Buyer to this Order</button>
+
+    <div class="hbox">
+      <button class="primary" id="submitOrderBtn">Record Order (all buyer legs at State 0)</button>
+      <span class="muted" id="submitMsg"></span>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="grow" id="userStatus">Ready</div>
+    <div>Kranti v0.2 Prototype</div>
+    <div id="clockBox">--:--</div>
+  </div>
+</div>
+
+<template id="legTemplate">
+  <fieldset class="leg-block">
+    <legend>Buyer Leg <span class="leg-num"></span> <button type="button" class="remove-leg-btn">Remove</button></legend>
+
+    <div class="field-grid">
+      <div class="field-row">
+        <label class="f-label">Buyer</label>
+        <div class="hbox">
+          <div class="buyer-picker" style="position:relative; max-width:320px; flex:1;">
+            <input type="text" class="buyerSearch" placeholder="Search by name, GSTIN or phone…" autocomplete="off">
+            <input type="hidden" class="buyerId">
+            <div class="buyerResults" style="display:none; position:absolute; z-index:50; top:100%; left:0; right:0; background:#fff; border-top:1px solid var(--dark-shadow); border-left:1px solid var(--dark-shadow); border-right:1px solid var(--dark-shadow); border-bottom:1px solid var(--dark-shadow); max-height:180px; overflow:auto;"></div>
+          </div>
+          <button type="button" class="newBuyerBtn">+ New</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <label class="f-label">Delivery Condition</label>
+        <select class="deliveryCondition">
+          <option value="EX">EX (Ex-Godown)</option>
+          <option value="FOR">FOR (Free on Road)</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <label class="f-label">Lifting Date (window start)</label>
+        <input type="date" class="liftingDate">
+      </div>
+      <div class="field-row">
+        <label class="f-label">Last Lifting Date (window end)</label>
+        <input type="date" class="lastLiftingDate">
+      </div>
+
+      <div class="field-row">
+        <label class="f-label">Payment Type</label>
+        <select class="paymentType">
+          <option value="advance">Advance</option>
+          <option value="credit">Credit</option>
+          <option value="ratio">Ratio</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="f-label">Advance / Ratio A (%)</label>
+        <input type="number" class="advancePct" min="0" max="100" placeholder="e.g. 30">
+      </div>
+      <div class="field-row">
+        <label class="f-label">Credit / Ratio B (%) — auto</label>
+        <input type="number" class="creditPct" min="0" max="100" readonly>
+      </div>
+    </div>
+
+    <fieldset style="margin-top:10px;">
+      <legend>Items</legend>
+      <div class="hbox" style="margin-bottom:8px;">
+        <label class="muted">Quick add from Best Buys:</label>
+        <select class="bestBuySelect" style="max-width:240px;"></select>
+        <button type="button" class="addBestBuyBtn">Add</button>
+      </div>
+<table class="grid">
+        <thead><tr><th>Sr. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th><th></th></tr></thead>
+        <tbody class="itemsBody"></tbody>
+      </table>
+      <button type="button" class="addItemRowBtn" style="margin-top:8px;">+ Add Item</button>
+    </fieldset>
+  </fieldset>
+</template>
+
+<script src="js/nav.js"></script>
+  <script src="js/form-cache.js"></script>
+  <script src="js/sauda-create.js"></script>
+  <script src="js/section-collapse.js"></script>
+</body>
+</html>
