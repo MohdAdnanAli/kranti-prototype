@@ -1,5 +1,5 @@
 -- KRANTI PROTOTYPE v0.2 — SCHEMA
--- Adds: Order/multi-buyer split, 4-ID system, hard-expiry PO links,
+-- Adds: Order/multi-buyer split, 4-ID system, hard-expiry SO links,
 --       invoice numbering, email capture, lifting window, payment ratio
 
 CREATE TABLE organization (
@@ -92,7 +92,7 @@ CREATE TABLE deal (
     advance_pct REAL,              -- ratio fields, auto-complementary
     credit_pct REAL,
     payment_detail TEXT,           -- free-text notes, optional
-    status TEXT DEFAULT 'draft',   -- draft / po_generated / verified / disputed
+    status TEXT DEFAULT 'draft',   -- draft / so_generated / verified / disputed
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -107,12 +107,12 @@ CREATE TABLE deal_item (
     price REAL                    -- unit rate
 );
 
--- PURCHASE ORDER: ID #2 of the 4-ID system: po_id
-CREATE TABLE purchase_order (
+-- SALE ORDER: ID #2 of the 4-ID system: so_id
+CREATE TABLE sale_order (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     deal_id INTEGER REFERENCES deal(id),
     transporter_id INTEGER REFERENCES transporter(id),
-    sequential_code TEXT,          -- 7-digit, shown on PO
+    sequential_code TEXT,          -- 7-digit, shown on SO
     link_hash TEXT,                -- hash(code + seller_gstin)
     status TEXT DEFAULT 'sent',    -- sent / viewed / verified / denied / ignored / expired
     resend_count INTEGER DEFAULT 0,
@@ -126,7 +126,7 @@ CREATE TABLE purchase_order (
 -- parent_id / branch handling = ID #4 (branch_id), deferred module, field reserved here.
 CREATE TABLE invoice_ack_rec (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    po_id INTEGER REFERENCES purchase_order(id),
+    so_id INTEGER REFERENCES sale_order(id),
     parent_id INTEGER REFERENCES invoice_ack_rec(id),  -- branch_id target, deferred
     invoice_number TEXT,           -- seller-entered, sequential-suggested
     invoice_date TEXT,             -- seller-entered

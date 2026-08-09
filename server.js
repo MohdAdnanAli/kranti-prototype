@@ -11,13 +11,13 @@ const EXPIRY_MINUTES = 25;
 const nowIso = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
 const addMinutes = (isoStr, m) => new Date(new Date(isoStr.replace(' ', 'T') + 'Z').getTime() + m * 60000).toISOString().slice(0, 19).replace('T', ' ');
 
-// Resolve a PO's effective status, lazily marking it expired if past its hard-expiry window.
-function effectivePOStatus(po) {
-  if ((po.status === 'sent' || po.status === 'viewed') && po.expires_at && nowIso() > po.expires_at) {
-    db.prepare(`UPDATE purchase_order SET status = 'expired' WHERE id = ?`).run(po.id);
+// Resolve a SO's effective status, lazily marking it expired if past its hard-expiry window.
+function effectiveSOStatus(so) {
+  if ((so.status === 'sent' || so.status === 'viewed') && so.expires_at && nowIso() > so.expires_at) {
+    db.prepare(`UPDATE sale_order SET status = 'expired' WHERE id = ?`).run(so.id);
     return 'expired';
   }
-  return po.status;
+  return so.status;
 }
 
 // ---------- AUTH ----------
@@ -143,10 +143,10 @@ app.delete('/api/best-buy/:id', (req, res) => {
 // ---------- DASHBOARD ----------
 app.get('/api/dashboard', (req, res) => {
   const totalDeals = db.prepare('SELECT COUNT(*) c FROM deal WHERE org_id = 1').get().c;
-  const totalPOs = db.prepare(`SELECT COUNT(*) c FROM purchase_order po JOIN deal d ON po.deal_id = d.id WHERE d.org_id = 1`).get().c;
+  const totalSOs = db.prepare(`SELECT COUNT(*) c FROM sale_order so JOIN deal d ON so.deal_id = d.id WHERE d.org_id = 1`).get().c;
   const verifiedAcks = db.prepare(`SELECT COUNT(*) c FROM invoice_ack_rec WHERE status = 'final'`).get().c;
   const disputed = db.prepare(`SELECT COUNT(*) c FROM deal WHERE org_id = 1 AND status = 'disputed'`).get().c;
-  const pendingPOs = db.prepare(`SELECT COUNT(*) c FROM purchase_order po JOIN deal d ON po.deal_id = d.id WHERE d.org_id = 1 AND po.status IN ('sent','viewed')`).get().c;
+  const pendingSOs = db.prepare(`SELECT COUNT(*) c FROM sale_order so JOIN deal d ON so.deal_id = d.id WHERE d.org_id = 1 AND so.status IN ('sent','viewed')`).get().c;
   const statusBreakdown = db.prepare(`SELECT status, COUNT(*) c FROM deal WHERE org_id = 1 GROUP BY status`).all();
   const buyerVolume = db.prepare(`
     SELECT b.name, COUNT(*) deal_count, SUM(di.qty * di.price) total_value
@@ -160,7 +160,7 @@ app.get('/api/dashboard', (req, res) => {
     LEFT JOIN order_group og ON d.order_id = og.id
     WHERE d.org_id = 1 ORDER BY d.created_at DESC LIMIT 6
   `).all();
-  res.json({ totalDeals, totalPOs, verifiedAcks, disputed, pendingPOs, statusBreakdown, buyerVolume, recentActivity });
+  res.json({ totalDeals, totalSOs, verifiedAcks, disputed, pendingSOs, statusBreakdown, buyerVolume, recentActivity });
 });
 
 // ---------- SAUDA CREATE (Order + N buyer legs) ----------
@@ -201,7 +201,7 @@ app.post('/api/order', (req, res) => {
   res.json({ ok: true, orderId, orderCode, dealIds });
 });
 
-// ---------- PURCHASE ORDERS ----------
+// ---------- SALE ORDERS ----------
 app.get('/api/deals/draft', (req, res) => {
   const rows = db.prepare(`
     SELECT d.id, d.delivery_condition, d.lifting_date, d.last_lifting_date, d.payment_type, d.created_at,
@@ -215,54 +215,54 @@ app.get('/api/deals/draft', (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/purchase-orders', (req, res) => {
+app.get('/api/sale-orders', (req, res) => {
   const rows = db.prepare(`
-    SELECT po.id, po.sequential_code, po.status, po.resend_count, po.frozen_at, po.generated_at, po.expires_at, po.responded_at,
+    SELECT so.id, so.sequential_code, so.status, so.resend_count, so.frozen_at, so.generated_at, so.expires_at, so.responded_at,
            d.id as deal_id, d.delivery_condition, d.payment_type, d.lifting_date, d.last_lifting_date, d.status as deal_status,
            og.order_code,
            b.name as buyer_name, b.gstin as buyer_gstin,
            a.name as agent_name, t.name as transporter_name
-    FROM purchase_order po
-    JOIN deal d ON po.deal_id = d.id
+    FROM sale_order so
+    JOIN deal d ON so.deal_id = d.id
     JOIN buyer b ON d.buyer_id = b.id
     LEFT JOIN order_group og ON d.order_id = og.id
     LEFT JOIN agent a ON og.agent_id = a.id
-    LEFT JOIN transporter t ON po.transporter_id = t.id
+    LEFT JOIN transporter t ON so.transporter_id = t.id
     WHERE d.org_id = 1
-    ORDER BY po.generated_at DESC
+    ORDER BY so.generated_at DESC
   `).all();
-  rows.forEach(r => { r.status = effectivePOStatus(r); });
+  rows.forEach(r => { r.status = effectiveSOStatus(r); });
   res.json(rows);
 });
 
-// PO not yet created — generate one for a draft deal
-app.post('/api/deal/:dealId/generate-po', (req, res) => {
+// SO not yet created — generate one for a draft deal
+app.post('/api/deal/:dealId/generate-so', (req, res) => {
   const deal = db.prepare('SELECT * FROM deal WHERE id = ?').get(req.params.dealId);
   if (!deal) return res.status(404).json({ error: 'Deal not found' });
   const code = String(1000000 + Math.floor(Math.random() * 9000000)).slice(0, 7);
   const hash = Math.random().toString(16).slice(2, 8);
   const gen = nowIso();
-  const info = db.prepare(`INSERT INTO purchase_order (deal_id, sequential_code, link_hash, status, generated_at, expires_at)
+  const info = db.prepare(`INSERT INTO sale_order (deal_id, sequential_code, link_hash, status, generated_at, expires_at)
     VALUES (?, ?, ?, 'sent', ?, ?)`).run(deal.id, code, hash, gen, addMinutes(gen, EXPIRY_MINUTES));
-  db.prepare(`UPDATE deal SET status = 'po_generated' WHERE id = ?`).run(deal.id);
-  res.json({ ok: true, poId: info.lastInsertRowid });
+  db.prepare(`UPDATE deal SET status = 'so_generated' WHERE id = ?`).run(deal.id);
+  res.json({ ok: true, soId: info.lastInsertRowid });
 });
 
-app.post('/api/po/:id/resend', (req, res) => {
-  const po = db.prepare('SELECT * FROM purchase_order WHERE id = ?').get(req.params.id);
-  if (!po) return res.status(404).json({ error: 'Not found' });
-  if (po.status === 'verified') return res.status(400).json({ error: 'Already verified — cannot resend.' });
+app.post('/api/so/:id/resend', (req, res) => {
+  const so = db.prepare('SELECT * FROM sale_order WHERE id = ?').get(req.params.id);
+  if (!so) return res.status(404).json({ error: 'Not found' });
+  if (so.status === 'verified') return res.status(400).json({ error: 'Already verified — cannot resend.' });
   const gen = nowIso();
-  db.prepare(`UPDATE purchase_order SET status='sent', generated_at=?, expires_at=?, responded_at=NULL, resend_count=resend_count+1 WHERE id=?`)
-    .run(gen, addMinutes(gen, EXPIRY_MINUTES), po.id);
+  db.prepare(`UPDATE sale_order SET status='sent', generated_at=?, expires_at=?, responded_at=NULL, resend_count=resend_count+1 WHERE id=?`)
+    .run(gen, addMinutes(gen, EXPIRY_MINUTES), so.id);
   res.json({ ok: true });
 });
 
 // ---------- PUBLIC: buyer confirmation link (no login, hard 25-min expiry) ----------
-app.get('/api/po/:id/public', (req, res) => {
-  const po = db.prepare('SELECT * FROM purchase_order WHERE id = ?').get(req.params.id);
-  if (!po) return res.status(404).json({ error: 'Not found' });
-  po.status = effectivePOStatus(po);
+app.get('/api/so/:id/public', (req, res) => {
+  const so = db.prepare('SELECT * FROM sale_order WHERE id = ?').get(req.params.id);
+  if (!so) return res.status(404).json({ error: 'Not found' });
+  so.status = effectiveSOStatus(so);
   const deal = db.prepare(`
     SELECT d.*, og.order_code, b.name as buyer_name, b.gstin as buyer_gstin, b.phone as buyer_phone,
            a.name as agent_name
@@ -270,30 +270,30 @@ app.get('/api/po/:id/public', (req, res) => {
     LEFT JOIN order_group og ON d.order_id = og.id
     LEFT JOIN agent a ON og.agent_id = a.id
     JOIN buyer b ON d.buyer_id = b.id
-    WHERE d.id = ?`).get(po.deal_id);
-  const items = db.prepare('SELECT * FROM deal_item WHERE deal_id = ?').all(po.deal_id);
+    WHERE d.id = ?`).get(so.deal_id);
+  const items = db.prepare('SELECT * FROM deal_item WHERE deal_id = ?').all(so.deal_id);
 
-  if (po.status === 'sent' || po.status === 'viewed') {
-    db.prepare(`UPDATE purchase_order SET status = 'viewed' WHERE id = ? AND status = 'sent'`).run(po.id);
+  if (so.status === 'sent' || so.status === 'viewed') {
+    db.prepare(`UPDATE sale_order SET status = 'viewed' WHERE id = ? AND status = 'sent'`).run(so.id);
   }
-  res.json({ po, deal, items });
+  res.json({ so, deal, items });
 });
 
-app.post('/api/po/:id/respond', (req, res) => {
+app.post('/api/so/:id/respond', (req, res) => {
   const { action } = req.body; // verify | deny | ignore
-  const po = db.prepare('SELECT * FROM purchase_order WHERE id = ?').get(req.params.id);
-  if (!po) return res.status(404).json({ error: 'Not found' });
-  const status = effectivePOStatus(po);
+  const so = db.prepare('SELECT * FROM sale_order WHERE id = ?').get(req.params.id);
+  if (!so) return res.status(404).json({ error: 'Not found' });
+  const status = effectiveSOStatus(so);
   if (status === 'expired') return res.status(410).json({ error: 'This link has expired (25-minute window passed). Ask the seller to resend.' });
   if (status === 'verified') return res.status(400).json({ error: 'Already verified.' });
   if (!['verify', 'deny', 'ignore'].includes(action)) return res.status(400).json({ error: 'Invalid action.' });
 
   const now = nowIso();
   if (action === 'verify') {
-    db.prepare(`UPDATE purchase_order SET status='verified', frozen_at=?, responded_at=? WHERE id=?`).run(now, now, po.id);
-    db.prepare(`UPDATE deal SET status='verified' WHERE id=?`).run(po.deal_id);
+    db.prepare(`UPDATE sale_order SET status='verified', frozen_at=?, responded_at=? WHERE id=?`).run(now, now, so.id);
+    db.prepare(`UPDATE deal SET status='verified' WHERE id=?`).run(so.deal_id);
   } else {
-    db.prepare(`UPDATE purchase_order SET status=?, responded_at=? WHERE id=?`).run(action === 'deny' ? 'denied' : 'ignored', now, po.id);
+    db.prepare(`UPDATE sale_order SET status=?, responded_at=? WHERE id=?`).run(action === 'deny' ? 'denied' : 'ignored', now, so.id);
   }
   res.json({ ok: true, status: action === 'verify' ? 'verified' : action });
 });
@@ -307,46 +307,46 @@ app.get('/api/invoice/next', (req, res) => {
 });
 
 // ---------- BILL (Invoice Ack Rec) ----------
-app.get('/api/bill/:poId', (req, res) => {
-const po = db.prepare(`
-    SELECT po.*, d.delivery_condition, d.payment_type, d.advance_pct, d.credit_pct,
+app.get('/api/bill/:soId', (req, res) => {
+const so = db.prepare(`
+    SELECT so.*, d.delivery_condition, d.payment_type, d.advance_pct, d.credit_pct,
            d.lifting_date, d.last_lifting_date,
            og.order_code,
            b.name as buyer_name, b.gstin as buyer_gstin, b.phone as buyer_phone, b.email as buyer_email, b.address as buyer_address,
            a.name as agent_name, a.phone as agent_phone, a.email as agent_email,
            t.name as transporter_name, t.phone as transporter_phone, t.email as transporter_email
-    FROM purchase_order po
-    JOIN deal d ON po.deal_id = d.id
+    FROM sale_order so
+    JOIN deal d ON so.deal_id = d.id
     LEFT JOIN order_group og ON d.order_id = og.id
     JOIN buyer b ON d.buyer_id = b.id
     LEFT JOIN agent a ON og.agent_id = a.id
-    LEFT JOIN transporter t ON po.transporter_id = t.id
-    WHERE po.id = ?
-  `).get(req.params.poId);
-  if (!po) return res.status(404).json({ error: 'Not found' });
-  po.status = effectivePOStatus(po);
-  const items = db.prepare('SELECT * FROM deal_item WHERE deal_id = ?').all(po.deal_id);
+    LEFT JOIN transporter t ON so.transporter_id = t.id
+    WHERE so.id = ?
+  `).get(req.params.soId);
+  if (!so) return res.status(404).json({ error: 'Not found' });
+  so.status = effectiveSOStatus(so);
+  const items = db.prepare('SELECT * FROM deal_item WHERE deal_id = ?').all(so.deal_id);
   const terms = db.prepare('SELECT * FROM terms_condition WHERE org_id = 1 LIMIT 1').get();
-  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE po_id = ? ORDER BY id DESC LIMIT 1').get(po.id);
-  res.json({ po, items, terms, ack });
+  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(so.id);
+  res.json({ so, items, terms, ack });
 });
 
 // Seller sets invoice number + date, runs OCR-adapter cross-check, flushes the draft ack rec.
 // This must happen before a buyer can trigger OTP.
-app.post('/api/bill/:poId/prepare', (req, res) => {
+app.post('/api/bill/:soId/prepare', (req, res) => {
   const { invoice_number, invoice_date, ocr_verified } = req.body;
-  const po = db.prepare('SELECT * FROM purchase_order WHERE id = ?').get(req.params.poId);
-  if (!po) return res.status(404).json({ error: 'Not found' });
-  if (po.status !== 'verified') return res.status(400).json({ error: 'PO must be buyer-verified before bill preparation.' });
+  const so = db.prepare('SELECT * FROM sale_order WHERE id = ?').get(req.params.soId);
+  if (!so) return res.status(404).json({ error: 'Not found' });
+  if (so.status !== 'verified') return res.status(400).json({ error: 'Sale Order must be buyer-verified before bill preparation.' });
   if (!invoice_number || !invoice_date) return res.status(400).json({ error: 'Invoice number and date are required.' });
 
-  let ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE po_id = ? ORDER BY id DESC LIMIT 1').get(po.id);
+  let ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(so.id);
   if (ack) {
     db.prepare(`UPDATE invoice_ack_rec SET invoice_number=?, invoice_date=?, ocr_verified=? WHERE id=?`)
       .run(invoice_number, invoice_date, ocr_verified ? 1 : 0, ack.id);
   } else {
-    const info = db.prepare(`INSERT INTO invoice_ack_rec (po_id, invoice_number, invoice_date, ocr_verified, status) VALUES (?, ?, ?, ?, 'draft')`)
-      .run(po.id, invoice_number, invoice_date, ocr_verified ? 1 : 0);
+    const info = db.prepare(`INSERT INTO invoice_ack_rec (so_id, invoice_number, invoice_date, ocr_verified, status) VALUES (?, ?, ?, ?, 'draft')`)
+      .run(so.id, invoice_number, invoice_date, ocr_verified ? 1 : 0);
     ack = { id: info.lastInsertRowid };
   }
   // Bump the org's running invoice sequence so the next suggestion moves forward.
@@ -355,10 +355,10 @@ app.post('/api/bill/:poId/prepare', (req, res) => {
 });
 
 // ---------- PUBLIC: buyer OTP / e-stamp verification (no login) ----------
-app.post('/api/bill/:poId/request-otp', (req, res) => {
-  const po = db.prepare('SELECT * FROM purchase_order WHERE id = ?').get(req.params.poId);
-  if (!po) return res.status(404).json({ error: 'Not found' });
-  let ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE po_id = ? ORDER BY id DESC LIMIT 1').get(po.id);
+app.post('/api/bill/:soId/request-otp', (req, res) => {
+  const so = db.prepare('SELECT * FROM sale_order WHERE id = ?').get(req.params.soId);
+  if (!so) return res.status(404).json({ error: 'Not found' });
+  let ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(so.id);
   if (!ack || !ack.invoice_number) return res.status(400).json({ error: 'Seller has not generated the invoice yet.' });
   if (ack.otp_locked) return res.status(403).json({ error: 'OTP locked. Ask seller to unlock.' });
 
@@ -367,9 +367,9 @@ app.post('/api/bill/:poId/request-otp', (req, res) => {
   res.json({ ok: true, demo_otp: otp });
 });
 
-app.post('/api/bill/:poId/verify-otp', (req, res) => {
+app.post('/api/bill/:soId/verify-otp', (req, res) => {
   const { otp } = req.body;
-  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE po_id = ? ORDER BY id DESC LIMIT 1').get(req.params.poId);
+  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(req.params.soId);
   if (!ack) return res.status(404).json({ error: 'No OTP requested yet.' });
   if (ack.otp_locked) return res.status(403).json({ error: 'OTP locked. Ask seller to unlock.' });
 
@@ -388,29 +388,29 @@ app.post('/api/bill/:poId/verify-otp', (req, res) => {
   }
 });
 
-app.post('/api/bill/:poId/unlock-otp', (req, res) => {
-  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE po_id = ? ORDER BY id DESC LIMIT 1').get(req.params.poId);
+app.post('/api/bill/:soId/unlock-otp', (req, res) => {
+  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(req.params.soId);
   if (!ack) return res.status(404).json({ error: 'Not found' });
   db.prepare('UPDATE invoice_ack_rec SET otp_attempts = 0, otp_locked = 0 WHERE id = ?').run(ack.id);
   res.json({ ok: true });
 });
 
 // Distribution stub — figures out email vs SMS fallback per recipient, doesn't actually send.
-app.post('/api/bill/:poId/distribute', (req, res) => {
-  const po = db.prepare('SELECT * FROM purchase_order WHERE id = ?').get(req.params.poId);
+app.post('/api/bill/:soId/distribute', (req, res) => {
+  const so = db.prepare('SELECT * FROM sale_order WHERE id = ?').get(req.params.soId);
   const deal = db.prepare(`
     SELECT og.agent_id, b.email as buyer_email, b.phone as buyer_phone
     FROM deal d LEFT JOIN order_group og ON d.order_id = og.id JOIN buyer b ON d.buyer_id = b.id
-    WHERE d.id = ?`).get(po.deal_id);
+    WHERE d.id = ?`).get(so.deal_id);
   const agent = deal.agent_id ? db.prepare('SELECT email, phone FROM agent WHERE id = ?').get(deal.agent_id) : null;
-  const transporter = po.transporter_id ? db.prepare('SELECT email, phone FROM transporter WHERE id = ?').get(po.transporter_id) : null;
+  const transporter = so.transporter_id ? db.prepare('SELECT email, phone FROM transporter WHERE id = ?').get(so.transporter_id) : null;
 
   const channels = [];
   channels.push(`buyer:${deal.buyer_email ? 'email' : 'sms'}`);
   if (agent) channels.push(`agent:${agent.email ? 'email' : 'sms'}`);
   if (transporter) channels.push(`transporter:${transporter.email ? 'email' : 'sms'}`);
 
-  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE po_id = ? ORDER BY id DESC LIMIT 1').get(po.id);
+  const ack = db.prepare('SELECT * FROM invoice_ack_rec WHERE so_id = ? ORDER BY id DESC LIMIT 1').get(so.id);
   const now = nowIso();
   db.prepare('UPDATE invoice_ack_rec SET distributed_at=?, distributed_channels=? WHERE id=?').run(now, channels.join(','), ack.id);
   res.json({ ok: true, distributed_at: now, channels });

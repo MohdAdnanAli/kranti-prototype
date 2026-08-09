@@ -1,23 +1,23 @@
 const params = new URLSearchParams(window.location.search);
-const poId = params.get('po');
+const soId = params.get('so');
 
-if (!poId) showPicker(); else loadBill(poId);
+if (!soId) showPicker(); else loadBill(soId);
 
 async function showPicker() {
   document.getElementById('pickerView').style.display = 'block';
   document.getElementById('billView').style.display = 'none';
-  const res = await fetch('/api/purchase-orders');
-  const pos = await res.json();
-  const verified = pos.filter(po => po.status === 'verified');
-  document.getElementById('pickerBody').innerHTML = verified.map(po => `
+  const res = await fetch('/api/sale-orders');
+  const sos = await res.json();
+  const verified = sos.filter(so => so.status === 'verified');
+  document.getElementById('pickerBody').innerHTML = verified.map(so => `
     <tr>
-      <td>${po.order_code || '—'}</td>
-      <td><b>${po.sequential_code}</b></td>
-      <td>${po.buyer_name}</td>
-      <td>${po.status}</td>
-      <td><a href="bill-generation.html?po=${po.id}">Open</a></td>
+      <td>${so.order_code || '—'}</td>
+      <td><b>${so.sequential_code}</b></td>
+      <td>${so.buyer_name}</td>
+      <td>${so.status}</td>
+      <td><a href="bill-generation.html?so=${so.id}">Open</a></td>
     </tr>
-  `).join('') || `<tr><td colspan="5" class="muted">No verified purchase orders yet.</td></tr>`;
+  `).join('') || `<tr><td colspan="5" class="muted">No verified sale orders yet.</td></tr>`;
 }
 
 async function loadBill(id) {
@@ -27,16 +27,16 @@ async function loadBill(id) {
   const res = await fetch(`/api/bill/${id}`);
   const d = await res.json();
 
-  document.getElementById('orderCode').textContent = d.po.order_code || '—';
-  document.getElementById('billCode').textContent = d.po.sequential_code;
+  document.getElementById('orderCode').textContent = d.so.order_code || '—';
+  document.getElementById('billCode').textContent = d.so.sequential_code;
 
   document.getElementById('buyerInfo').innerHTML =
-    `<b>${d.po.buyer_name}</b><br>${d.po.buyer_gstin}<br>${d.po.buyer_phone}${d.po.buyer_email ? '<br>' + d.po.buyer_email : ''}<br><span class="muted">${d.po.buyer_address}</span>`;
-  document.getElementById('agentInfo').innerHTML = d.po.agent_name
-    ? `<b>${d.po.agent_name}</b><br>${d.po.agent_phone || ''}${d.po.agent_email ? '<br>' + d.po.agent_email : ''}`
+    `<b>${d.so.buyer_name}</b><br>${d.so.buyer_gstin}<br>${d.so.buyer_phone}${d.so.buyer_email ? '<br>' + d.so.buyer_email : ''}<br><span class="muted">${d.so.buyer_address}</span>`;
+  document.getElementById('agentInfo').innerHTML = d.so.agent_name
+    ? `<b>${d.so.agent_name}</b><br>${d.so.agent_phone || ''}${d.so.agent_email ? '<br>' + d.so.agent_email : ''}`
     : `<span class="muted">No agent involved</span>`;
-  document.getElementById('transInfo').innerHTML = d.po.transporter_name
-    ? `<b>${d.po.transporter_name}</b><br>${d.po.transporter_phone || ''}${d.po.transporter_email ? '<br>' + d.po.transporter_email : ''}`
+  document.getElementById('transInfo').innerHTML = d.so.transporter_name
+    ? `<b>${d.so.transporter_name}</b><br>${d.so.transporter_phone || ''}${d.so.transporter_email ? '<br>' + d.so.transporter_email : ''}`
     : `<span class="muted">No transporter attached</span>`;
 
 document.getElementById('billItems').innerHTML = d.items.map((i, idx) => `
@@ -54,7 +54,7 @@ document.getElementById('billItems').innerHTML = d.items.map((i, idx) => `
     document.getElementById('invoiceDate').value = new Date().toISOString().slice(0, 10);
   }
 
-  const buyerLink = `${window.location.origin}/bill-ack.html?po=${id}`;
+  const buyerLink = `${window.location.origin}/bill-ack.html?so=${id}`;
   document.getElementById('buyerLinkBox').value = buyerLink;
 
   if (d.ack && d.ack.invoice_number) {
@@ -89,14 +89,14 @@ document.getElementById('prepareBtn').addEventListener('click', async () => {
   const invoice_date = document.getElementById('invoiceDate').value;
   if (!invoice_number || !invoice_date) { alert('Invoice number and date are required.'); return; }
 
-  const res = await fetch(`/api/bill/${poId}/prepare`, {
+  const res = await fetch(`/api/bill/${soId}/prepare`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ invoice_number, invoice_date, ocr_verified: !!window._ocrVerified })
   });
   const data = await res.json();
   if (!res.ok) { document.getElementById('prepareMsg').textContent = data.error; return; }
   document.getElementById('prepareMsg').textContent = 'Saved. Share the buyer link below.';
-  loadBill(poId);
+  loadBill(soId);
 });
 
 function renderStatus(ack) {
@@ -118,8 +118,8 @@ function renderStatus(ack) {
     box.innerHTML = `<p style="color:#9A1414; font-weight:bold;">Buyer's OTP attempts are exhausted.</p>
       <button id="unlockBtn">Unlock OTP for Buyer</button>`;
     document.getElementById('unlockBtn').addEventListener('click', async () => {
-      await fetch(`/api/bill/${poId}/unlock-otp`, { method: 'POST' });
-      loadBill(poId);
+      await fetch(`/api/bill/${soId}/unlock-otp`, { method: 'POST' });
+      loadBill(soId);
     });
   } else {
     box.innerHTML = `<p class="muted">Waiting on the buyer to trigger and verify their OTP via the link above.</p>`;

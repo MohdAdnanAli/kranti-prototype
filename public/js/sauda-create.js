@@ -272,7 +272,7 @@ const items = Array.from(block.querySelectorAll('.itemsBody tr')).map(tr => ({
   // Order recorded — clear the persisted draft so a fresh form starts empty.
   FormCache.clear(DRAFT_KEY);
   document.getElementById('submitMsg').innerHTML =
-    `Order <b>${data.orderCode}</b> recorded with ${legs.length} buyer leg(s), each at draft state. Go to Purchase Orders to generate a PO per buyer.`;
+`Order <b>${data.orderCode}</b> recorded with ${legs.length} buyer leg(s), each at draft state. Go to Sale Orders to generate a SO per buyer.`;
 });
 
 loadLookups().then(() => {

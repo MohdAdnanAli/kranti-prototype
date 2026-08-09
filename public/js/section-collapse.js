@@ -4,7 +4,7 @@
 // - Works for nested containers (e.g. bill-generation pickerView / billView).
 // - Default state: first h2 within each parent expanded, the rest collapsed.
 // - Runs on DOMContentLoaded AND via a MutationObserver so dynamically
-//   rendered section titles (e.g. po-confirm.js / bill-ack.js) also work.
+//   rendered section titles (e.g. sale-order-confirm.js / bill-ack.js) also work.
 
 (function () {
   // Process a single h2 title: ensure caret + body wrapper + click toggle.

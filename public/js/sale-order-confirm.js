@@ -1,19 +1,19 @@
 const params = new URLSearchParams(window.location.search);
-const poId = params.get('po');
+const soId = params.get('so');
 const main = document.getElementById('mainContent');
 
-if (!poId) {
-  main.innerHTML = '<p>No purchase order specified.</p>';
+if (!soId) {
+  main.innerHTML = '<p>No sale order specified.</p>';
 } else {
   load();
 }
 
 async function load() {
-  const res = await fetch(`/api/po/${poId}/public`);
+  const res = await fetch(`/api/so/${soId}/public`);
   if (!res.ok) { main.innerHTML = '<p>This link could not be found.</p>'; return; }
   const d = await res.json();
   render(d);
-  if (d.po.status === 'sent' || d.po.status === 'viewed') startCountdown(d.po.expires_at);
+  if (d.so.status === 'sent' || d.so.status === 'viewed') startCountdown(d.so.expires_at);
 }
 
 function statusBanner(status) {
@@ -30,13 +30,13 @@ function statusBanner(status) {
 }
 
 function render(d) {
-  const po = d.po, deal = d.deal, items = d.items;
+  const so = d.so, deal = d.deal, items = d.items;
   const total = items.reduce((s, i) => s + i.qty * i.price, 0);
 
   main.innerHTML = `
-    <h2 class="section-title">Order ${deal.order_code} — PO ${po.sequential_code}</h2>
+    <h2 class="section-title">Order ${deal.order_code} — SO ${so.sequential_code}</h2>
     <div class="hbox" style="margin-bottom:12px;">
-      ${statusBanner(po.status)}
+      ${statusBanner(so.status)}
       <span id="countdownBox" class="muted"></span>
     </div>
 
@@ -74,7 +74,7 @@ function render(d) {
     </fieldset>
   `;
 
-  renderResponseArea(po.status);
+  renderResponseArea(so.status);
 }
 
 function renderResponseArea(status) {
@@ -94,7 +94,7 @@ function renderResponseArea(status) {
   } else if (status === 'verified') {
     area.innerHTML = `<p>Thank you — this order is verified and locked. The seller will generate your invoice next.
       Once ready, you'll get a separate link to acknowledge the bill via OTP. You can also check now:</p>
-      <a href="bill-ack.html?po=${poId}">Check Bill Status →</a>`;
+      <a href="bill-ack.html?so=${soId}">Check Bill Status →</a>`;
   } else if (status === 'expired') {
     area.innerHTML = `<p>This confirmation window has closed. Please contact the seller for a new link.</p>`;
   } else {
@@ -103,7 +103,7 @@ function renderResponseArea(status) {
 }
 
 async function respond(action) {
-  const res = await fetch(`/api/po/${poId}/respond`, {
+  const res = await fetch(`/api/so/${soId}/respond`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action })
   });
   const data = await res.json();

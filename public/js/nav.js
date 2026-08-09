@@ -11,7 +11,7 @@
     { href: 'subscribers.html', label: 'Subscribers' },
     { href: 'profile.html', label: 'Profile' },
     { href: 'sauda-create.html', label: 'Sauda Create' },
-    { href: 'purchase-order.html', label: 'Purchase Orders' },
+    { href: 'sale-order.html', label: 'Sale Orders' },
     { href: 'bill-generation.html', label: 'Bill Generation' },
   ];
 

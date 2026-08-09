@@ -2,29 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kranti — Purchase Orders</title>
+<title>Kranti — Sale Orders</title>
 <link rel="stylesheet" href="css/old-school.css">
 </head>
 <body>
 <div class="app-window">
   <div class="titlebar">
     <span class="icon"></span>
-    <span class="title-text">Kranti Business Suite — Purchase Orders</span>
+    <span class="title-text">Kranti Business Suite — Sale Orders</span>
   </div>
   <div class="toolbar" id="navToolbar"></div>
 
   <div class="content">
-    <h2 class="section-title">Draft Deals — awaiting Purchase Order</h2>
+    <h2 class="section-title">Draft Deals — awaiting Sale Order</h2>
     <table class="grid">
       <thead><tr><th>Order</th><th>Buyer</th><th>Delivery</th><th>Lifting Window</th><th>Payment</th><th></th></tr></thead>
       <tbody id="draftBody"></tbody>
     </table>
 
-    <h2 class="section-title" style="margin-top:18px;">Purchase Orders — Structured chart of Sauda acquired</h2>
+    <h2 class="section-title" style="margin-top:18px;">Sale Orders — Structured chart of Sauda acquired</h2>
 
     <div class="filter-bar">
       <input type="text" id="searchBox" placeholder="Search buyer / order / code…">
-      <select id="statusFilterPO">
+      <select id="statusFilterSO">
         <option value="">All Status</option>
         <option value="sent">Sent</option>
         <option value="viewed">Viewed</option>
@@ -51,11 +51,11 @@
     <table class="grid">
       <thead>
         <tr>
-          <th>Order</th><th>PO Code</th><th>Buyer</th><th>Agent</th><th>Transporter</th>
+          <th>Order</th><th>SO Code</th><th>Buyer</th><th>Agent</th><th>Transporter</th>
           <th>Delivery</th><th>Payment</th><th>Lifting Window</th><th>Status</th><th>Expiry</th><th></th>
         </tr>
       </thead>
-      <tbody id="poBody"></tbody>
+      <tbody id="soBody"></tbody>
     </table>
   </div>
 
@@ -67,7 +67,7 @@
 </div>
 
   <script src="js/nav.js"></script>
-  <script src="js/purchase-order.js"></script>
+  <script src="js/sale-order.js"></script>
   <script src="js/section-collapse.js"></script>
 </body>
 </html>

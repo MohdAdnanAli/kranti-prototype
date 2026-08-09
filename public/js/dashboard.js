@@ -5,8 +5,8 @@
   const statGrid = document.getElementById('statGrid');
   const stats = [
     { num: d.totalDeals, lbl: 'Total Sauda' },
-    { num: d.totalPOs, lbl: 'Purchase Orders' },
-    { num: d.pendingPOs, lbl: 'Pending Buyer Response' },
+    { num: d.totalSOs, lbl: 'Sale Orders' },
+    { num: d.pendingSOs, lbl: 'Pending Buyer Response' },
     { num: d.verifiedAcks, lbl: 'Verified & Stamped' },
     { num: d.disputed, lbl: 'Disputed / Concern Raised' },
   ];
@@ -19,7 +19,7 @@
 
   const statusLabels = {
     draft: ['Draft', 'neutral'],
-    po_generated: ['PO Generated', 'warn'],
+    so_generated: ['SO Generated', 'warn'],
     verified: ['Verified', 'ok'],
     disputed: ['Disputed', 'danger'],
   };

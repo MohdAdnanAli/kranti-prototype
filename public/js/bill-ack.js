@@ -1,25 +1,25 @@
 const params = new URLSearchParams(window.location.search);
-const poId = params.get('po');
+const soId = params.get('so');
 const main = document.getElementById('mainContent');
 
-if (!poId) {
-  main.innerHTML = '<p>No purchase order specified.</p>';
+if (!soId) {
+  main.innerHTML = '<p>No sale order specified.</p>';
 } else {
   load();
 }
 
 async function load() {
-  const res = await fetch(`/api/bill/${poId}`);
+  const res = await fetch(`/api/bill/${soId}`);
   if (!res.ok) { main.innerHTML = '<p>Not found.</p>'; return; }
   const d = await res.json();
   render(d);
 }
 
 function render(d) {
-  const po = d.po;
+  const so = d.so;
 
-  if (po.status !== 'verified') {
-    main.innerHTML = `<p>This bill isn't ready yet — the purchase order must be verified first. Current status: <b>${po.status}</b>.</p>`;
+  if (so.status !== 'verified') {
+    main.innerHTML = `<p>This bill isn't ready yet — the sale order must be verified first. Current status: <b>${so.status}</b>.</p>`;
     return;
   }
   if (!d.ack || !d.ack.invoice_number) {
@@ -31,11 +31,11 @@ function render(d) {
   const total = items.reduce((s, i) => s + i.qty * i.price, 0);
 
   main.innerHTML = `
-    <h2 class="section-title">Order ${po.order_code} — Invoice ${d.ack.invoice_number}</h2>
+    <h2 class="section-title">Order ${so.order_code} — Invoice ${d.ack.invoice_number}</h2>
     <div class="field-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
       <fieldset>
         <legend>Buyer</legend>
-        <b>${po.buyer_name}</b><br>${po.buyer_gstin || ''}<br>${po.buyer_phone || ''}
+        <b>${so.buyer_name}</b><br>${so.buyer_gstin || ''}<br>${so.buyer_phone || ''}
       </fieldset>
       <fieldset>
         <legend>Invoice</legend>
@@ -113,7 +113,7 @@ function renderVerification(d) {
   `;
 
   document.getElementById('getOtpBtn').addEventListener('click', async () => {
-    const r = await fetch(`/api/bill/${poId}/request-otp`, { method: 'POST' });
+    const r = await fetch(`/api/bill/${soId}/request-otp`, { method: 'POST' });
     const data = await r.json();
     if (!r.ok) { document.getElementById('demoOtpNote').textContent = data.error; return; }
     document.getElementById('demoOtpNote').innerHTML = `OTP sent to your registered phone. <b>(Demo OTP: ${data.demo_otp})</b>`;
@@ -122,13 +122,13 @@ function renderVerification(d) {
 
   document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
     const otp = document.getElementById('otpInput').value.trim();
-    const r = await fetch(`/api/bill/${poId}/verify-otp`, {
+    const r = await fetch(`/api/bill/${soId}/verify-otp`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ otp })
     });
     const data = await r.json();
     if (r.ok && data.verified) {
       // Trigger seller-side distribution once sealed.
-      await fetch(`/api/bill/${poId}/distribute`, { method: 'POST' });
+      await fetch(`/api/bill/${soId}/distribute`, { method: 'POST' });
       load();
     } else {
       document.getElementById('otpMsg').textContent = data.error + (data.attempts ? ` (attempt ${data.attempts}/3)` : '');

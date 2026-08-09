@@ -1,4 +1,4 @@
-let allPOs = [];
+let allSOs = [];
 
 async function loadDrafts() {
   const res = await fetch('/api/deals/draft');
@@ -10,22 +10,22 @@ async function loadDrafts() {
       <td>${d.delivery_condition}</td>
       <td>${d.lifting_date || '—'} → ${d.last_lifting_date || '—'}</td>
       <td>${d.payment_type}</td>
-      <td><button onclick="generatePO(${d.id})">Generate PO</button></td>
+      <td><button onclick="generateSO(${d.id})">Generate SO</button></td>
     </tr>
-  `).join('') || `<tr><td colspan="6" class="muted">No draft deals waiting — every deal has a PO.</td></tr>`;
+  `).join('') || `<tr><td colspan="6" class="muted">No draft deals waiting — every deal has a SO.</td></tr>`;
 }
 
-async function generatePO(dealId) {
-  const res = await fetch(`/api/deal/${dealId}/generate-po`, { method: 'POST' });
+async function generateSO(dealId) {
+  const res = await fetch(`/api/deal/${dealId}/generate-so`, { method: 'POST' });
   const data = await res.json();
   if (!res.ok) { alert(data.error || 'Failed'); return; }
   loadDrafts();
-  loadPOs();
+  loadSOs();
 }
 
-async function loadPOs() {
-  const res = await fetch('/api/purchase-orders');
-  allPOs = await res.json();
+async function loadSOs() {
+  const res = await fetch('/api/sale-orders');
+  allSOs = await res.json();
   render();
 }
 
@@ -49,56 +49,56 @@ function countdownText(expiresAt, status) {
 
 function render() {
   const search = document.getElementById('searchBox').value.toLowerCase();
-  const status = document.getElementById('statusFilterPO').value;
+  const status = document.getElementById('statusFilterSO').value;
   const delivery = document.getElementById('deliveryFilter').value;
   const payment = document.getElementById('paymentFilter').value;
   const dateFrom = document.getElementById('dateFrom').value;
   const dateTo = document.getElementById('dateTo').value;
 
-  const rows = allPOs.filter(po => {
-    const genDate = po.generated_at ? po.generated_at.slice(0, 10) : '';
+  const rows = allSOs.filter(so => {
+    const genDate = so.generated_at ? so.generated_at.slice(0, 10) : '';
     const inRange = (!dateFrom || genDate >= dateFrom) && (!dateTo || genDate <= dateTo);
     return inRange &&
-      (!search || po.buyer_name.toLowerCase().includes(search) || po.sequential_code.includes(search) || (po.order_code || '').toLowerCase().includes(search)) &&
-      (!status || po.status === status) &&
-      (!delivery || po.delivery_condition === delivery) &&
-      (!payment || po.payment_type === payment);
+      (!search || so.buyer_name.toLowerCase().includes(search) || so.sequential_code.includes(search) || (so.order_code || '').toLowerCase().includes(search)) &&
+      (!status || so.status === status) &&
+      (!delivery || so.delivery_condition === delivery) &&
+      (!payment || so.payment_type === payment);
   });
 
-  document.getElementById('poBody').innerHTML = rows.map(po => {
-    const meta = statusMeta[po.status] || [po.status, 'neutral'];
-    const canResend = ['denied', 'ignored', 'expired'].includes(po.status);
-    const buyerLink = `${window.location.origin}/po-confirm.html?po=${po.id}`;
+  document.getElementById('soBody').innerHTML = rows.map(so => {
+    const meta = statusMeta[so.status] || [so.status, 'neutral'];
+    const canResend = ['denied', 'ignored', 'expired'].includes(so.status);
+    const buyerLink = `${window.location.origin}/sale-order-confirm.html?so=${so.id}`;
     return `
       <tr>
-        <td>${po.order_code || '—'}</td>
-        <td><b>${po.sequential_code}</b></td>
-        <td>${po.buyer_name}</td>
-        <td>${po.agent_name || '—'}</td>
-        <td>${po.transporter_name || '—'}</td>
-        <td>${po.delivery_condition}</td>
-        <td>${po.payment_type}</td>
-        <td>${po.lifting_date || '—'} → ${po.last_lifting_date || '—'}</td>
+        <td>${so.order_code || '—'}</td>
+        <td><b>${so.sequential_code}</b></td>
+        <td>${so.buyer_name}</td>
+        <td>${so.agent_name || '—'}</td>
+        <td>${so.transporter_name || '—'}</td>
+        <td>${so.delivery_condition}</td>
+        <td>${so.payment_type}</td>
+        <td>${so.lifting_date || '—'} → ${so.last_lifting_date || '—'}</td>
         <td><span class="tag ${meta[1]}">${meta[0]}</span></td>
-        <td class="countdown" data-expires="${po.expires_at || ''}" data-status="${po.status}">${countdownText(po.expires_at, po.status)}</td>
+        <td class="countdown" data-expires="${so.expires_at || ''}" data-status="${so.status}">${countdownText(so.expires_at, so.status)}</td>
         <td class="hbox">
           <button onclick="navigator.clipboard.writeText('${buyerLink}'); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy Link',1200)">Copy Link</button>
-          ${po.status === 'verified' ? `<a href="bill-generation.html?po=${po.id}">Open Bill</a>` : ''}
-          ${canResend ? `<button onclick="resendPO(${po.id})">Resend</button>` : ''}
+          ${so.status === 'verified' ? `<a href="bill-generation.html?so=${so.id}">Open Bill</a>` : ''}
+          ${canResend ? `<button onclick="resendSO(${so.id})">Resend</button>` : ''}
         </td>
       </tr>
     `;
   }).join('');
 
-  document.getElementById('countBox').textContent = `${rows.length} of ${allPOs.length} records`;
+  document.getElementById('countBox').textContent = `${rows.length} of ${allSOs.length} records`;
 }
 
-async function resendPO(id) {
-  await fetch(`/api/po/${id}/resend`, { method: 'POST' });
-  loadPOs();
+async function resendSO(id) {
+  await fetch(`/api/so/${id}/resend`, { method: 'POST' });
+  loadSOs();
 }
 
-['searchBox', 'statusFilterPO', 'deliveryFilter', 'paymentFilter', 'dateFrom', 'dateTo'].forEach(id =>
+['searchBox', 'statusFilterSO', 'deliveryFilter', 'paymentFilter', 'dateFrom', 'dateTo'].forEach(id =>
   document.getElementById(id).addEventListener('input', render)
 );
 
@@ -109,4 +109,4 @@ setInterval(() => {
 }, 1000);
 
 loadDrafts();
-loadPOs();
+loadSOs();

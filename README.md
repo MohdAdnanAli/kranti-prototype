@@ -6,15 +6,15 @@ Node/Express backend, SQLite database.
 ## What's new in v0.2
 
 - **Order → multi-buyer split.** One Order (`ORD-000001`) can hold N independent
-  buyer legs. Each leg gets its own Purchase Order, its own buyer link, its own
+  buyer legs. Each leg gets its own Sale Order, its own buyer link, its own
   Bill and OTP cycle — but all share the Order ID for traceability.
-- **4-ID system**: `order_id`, `po_id`, `bill_id` (invoice_ack_rec), and a reserved
+- **4-ID system**: `order_id`, `so_id`, `bill_id` (invoice_ack_rec), and a reserved
   `parent_id`/branch slot for the (still-deferred) dispute-branching module.
 - **Hard 25-minute expiry** on buyer confirmation links. Past the window, the link
   is dead — the seller has to hit **Resend** to reissue it.
 - **Buyer flow now genuinely requires no login** — two new public pages:
-  - `po-confirm.html?po=<id>` — Verify / Deny / Ignore, with a live countdown
-  - `bill-ack.html?po=<id>` — OTP trigger + verification + e-stamp display
+  - `sale-order-confirm.html?so=<id>` — Verify / Deny / Ignore, with a live countdown
+  - `bill-ack.html?so=<id>` — OTP trigger + verification + e-stamp display
   This fixes a real gap in v0.1, where OTP verification incorrectly lived behind
   the seller's authenticated shell.
 - **Bill Generation** is now a seller-only management view: an OCR-adapter stub
@@ -37,9 +37,9 @@ Node/Express backend, SQLite database.
 3. **Profile** — full CRUD: Seller Details, Buyers, Agents, Transporters, T&C, Best Buys, Note
 4. **Advanced Dashboard** — deal stats, status breakdown, buyer volume, recent activity
 5. **Sauda Create** — one Order, add as many independent buyer legs as needed
-6. **Purchase Orders** — draft deals awaiting a PO, live expiry countdowns, resend, copy buyer link
+6. **Sale Orders** — draft deals awaiting a SO, live expiry countdowns, resend, copy buyer link
 7. **Bill Generation** (seller view) — OCR stub, invoice prep, buyer link, status mirror
-8. **po-confirm.html** (public, no login) — buyer's PO verification screen
+8. **sale-order-confirm.html** (public, no login) — buyer's SO verification screen
 9. **bill-ack.html** (public, no login) — buyer's OTP + e-stamp screen
 
 Everything except login uses the "old-school enterprise software" look (beveled
@@ -63,10 +63,10 @@ Then open **http://localhost:4173/login.html**
 
 ## Demo data worth knowing about
 
-- **PO #1** (Order `ORD-000001`, Om Traders) is seeded fresh — its 25-minute
+- **SO #1** (Order `ORD-000001`, Om Traders) is seeded fresh — its 25-minute
   expiry window starts counting from the moment you run the seed script. Good
   for testing the hard-expiry behavior live.
-- **PO #4** (Order `ORD-000004`, Om Traders, second leg) is seeded already past
+- **SO #4** (Order `ORD-000004`, Om Traders, second leg) is seeded already past
   its window — shows `expired` status and the Resend button immediately.
 - **Order `ORD-000004`** itself is the multi-buyer demo — two buyer legs
   (Ganesh Agro Traders, verified; Om Traders, pending) under one order.
