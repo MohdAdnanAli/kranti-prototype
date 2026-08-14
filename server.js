@@ -314,7 +314,7 @@ const so = db.prepare(`
            og.order_code,
            b.name as buyer_name, b.gstin as buyer_gstin, b.phone as buyer_phone, b.email as buyer_email, b.address as buyer_address,
            a.name as agent_name, a.phone as agent_phone, a.email as agent_email,
-           t.name as transporter_name, t.phone as transporter_phone, t.email as transporter_email
+           t.name as transporter_name, t.phone as transporter_phone, t.email as transporter_email, t.vehicle_info as transporter_vehicle_info
     FROM sale_order so
     JOIN deal d ON so.deal_id = d.id
     LEFT JOIN order_group og ON d.order_id = og.id

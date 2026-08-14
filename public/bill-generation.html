@@ -1,118 +1,212 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Kranti — Bill Generation</title>
-<link rel="stylesheet" href="css/old-school.css">
-</head>
-<body>
-<div class="app-window">
-  <div class="titlebar">
-    <span class="icon"></span>
-    <span class="title-text">Kranti Business Suite — Bill Generation (Seller View)</span>
-  </div>
-  <div class="toolbar" id="navToolbar"></div>
-
-  <div class="content">
-    <div id="pickerView">
-      <h2 class="section-title">Bill Generation — Select a verified Sale Order</h2>
-      <p class="muted">Only buyer-verified orders can move to bill generation.</p>
-      <table class="grid">
-        <thead><tr><th>Order</th><th>SO Code</th><th>Buyer</th><th>Status</th><th></th></tr></thead>
-        <tbody id="pickerBody"></tbody>
-      </table>
-    </div>
-
-<div id="billView" style="display:none;">
-      <div class="sealed-bill" id="sealedBill">
-      <div class="watermark" id="billWatermark" style="display:none;">
-        <div class="band">Verified ✓</div>
-        <div class="band">Verified ✓</div>
-        <div class="band">Verified ✓</div>
-        <div class="band">Verified ✓</div>
-        <div class="band">Verified ✓</div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kranti — Bill Generation</title>
+    <link rel="stylesheet" href="css/old-school.css" />
+  </head>
+  <body>
+    <div class="app-window">
+      <div class="titlebar">
+        <span class="icon"></span>
+        <span class="title-text"
+          >Kranti Business Suite — Bill Generation (Seller View)</span
+        >
       </div>
-      <h2 class="section-title">Order <span id="orderCode"></span> — SO <span id="billCode"></span></h2>
+      <div class="toolbar" id="navToolbar"></div>
 
-<div class="field-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr; margin-bottom:14px;">
-        <fieldset><legend>Seller</legend><div id="sellerInfo"></div></fieldset>
-        <fieldset><legend>Buyer</legend><div id="buyerInfo"></div></fieldset>
-        <fieldset><legend>Agent</legend><div id="agentInfo"></div></fieldset>
-        <fieldset><legend>Transporter</legend><div id="transInfo"></div></fieldset>
-      </div>
-
-      <fieldset>
-        <legend>Items</legend>
-        <table class="grid">
-<thead><tr><th>Sr. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (gst included ₹)</th></tr></thead>
-          <tbody id="billItems"></tbody>
-        </table>
-      </fieldset>
-
-      <fieldset>
-        <legend>OCR Adapter — cross-check before invoice is flushed</legend>
-        <p class="muted">Upload a photo/scan of the physical invoice. The adapter cross-checks it against the recorded deal
-          before the invoice data is flushed into the sealed record. <i>(Demo stub — no real OCR call is made.)</i></p>
-        <div class="hbox">
-          <input type="file" id="ocrFile" accept="image/*">
-          <button id="ocrRunBtn">Run OCR Cross-Check</button>
-          <span id="ocrResult" class="muted"></span>
+      <div class="content">
+        <div id="pickerView">
+          <h2 class="section-title">
+            Bill Generation — Select a verified Sale Order
+          </h2>
+          <p class="muted">
+            Only buyer-verified orders can move to bill generation.
+          </p>
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>SO Code</th>
+                <th>Buyer</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="pickerBody"></tbody>
+          </table>
         </div>
-      </fieldset>
 
-      <fieldset>
-        <legend>Invoice Details</legend>
-        <div class="field-grid">
-          <div class="field-row">
-            <label class="f-label">Invoice Number</label>
-            <input type="text" id="invoiceNumber">
-          </div>
-          <div class="field-row">
-            <label class="f-label">Invoice Date</label>
-            <input type="date" id="invoiceDate">
-          </div>
-        </div>
-        <div class="hbox" style="margin-top:8px;">
-          <button class="primary" id="prepareBtn">Generate Invoice Ack Rec</button>
-          <span id="prepareMsg" class="muted"></span>
-        </div>
-      </fieldset>
-
-<fieldset id="buyerLinkFieldset" style="display:none;">
-        <legend>Buyer Acknowledgement Link</legend>
-        <p class="muted">Share this link with the buyer — no login required. They'll trigger their own OTP to seal the document.</p>
-        <div class="hbox">
-          <div class="qr-wrap">
-            <canvas id="buyerLinkQr" width="120" height="120"></canvas>
-            <span class="qr-caption">Scan this QR to open the buyer acknowledgement page on any device.</span>
-          </div>
-          <div style="flex:1; min-width:220px;">
-            <input type="text" id="buyerLinkBox" readonly style="flex:1;">
-            <div class="hbox" style="margin-top:6px;">
-              <button id="copyLinkBtn">Copy Link</button>
+        <div id="billView" style="display: none">
+          <div class="sealed-bill" id="sealedBill">
+            <div class="watermark" id="billWatermark" style="display: none">
+              <div class="band">Verified ✓</div>
+              <div class="band">Verified ✓</div>
+              <div class="band">Verified ✓</div>
+              <div class="band">Verified ✓</div>
+              <div class="band">Verified ✓</div>
             </div>
+            <h2 class="section-title">
+              Order <span id="orderCode"></span> — SO
+              <span id="billCode"></span>
+            </h2>
+
+            <div
+              class="field-grid"
+              style="
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                margin-bottom: 14px;
+              "
+            >
+              <fieldset>
+                <legend>Seller</legend>
+                <div id="sellerInfo"></div>
+              </fieldset>
+              <fieldset>
+                <legend>Buyer</legend>
+                <div id="buyerInfo"></div>
+              </fieldset>
+              <fieldset>
+                <legend>Agent</legend>
+                <div id="agentInfo"></div>
+              </fieldset>
+              <fieldset>
+                <legend>Transporter</legend>
+                <div id="transInfo"></div>
+              </fieldset>
+            </div>
+
+            <fieldset>
+              <legend>Items</legend>
+              <table class="grid">
+                <thead>
+                  <tr>
+                    <th>Sl. No.</th>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                    <th>HSN Code</th>
+                    <th>Quantity</th>
+                    <th>UOM</th>
+                    <th>Unit Rate (gst included ₹)</th>
+                    <th>Total (₹)</th>
+                  </tr>
+                </thead>
+                <tbody id="billItems"></tbody>
+              </table>
+            </fieldset>
+
+            <fieldset>
+              <legend>
+                OCR Adapter — cross-check before invoice is flushed
+              </legend>
+              <p class="muted">
+                Upload a photo/scan of the physical invoice. The adapter
+                cross-checks it against the recorded deal before the invoice
+                data is flushed into the sealed record.
+                <i>(Demo stub — no real OCR call is made.)</i>
+              </p>
+              <div class="hbox">
+                <input type="file" id="ocrFile" accept="image/*" />
+                <button id="ocrRunBtn">Run OCR Cross-Check</button>
+                <span id="ocrResult" class="muted"></span>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Invoice Details</legend>
+              <div class="field-grid">
+                <div class="field-row">
+                  <label class="f-label">Invoice Number</label>
+                  <input type="text" id="invoiceNumber" />
+                </div>
+                <div class="field-row">
+                  <label class="f-label">Invoice Date</label>
+                  <input type="date" id="invoiceDate" />
+                </div>
+                <div class="field-row">
+                  <label class="f-label">Invoice Amount</label>
+                  <input type="text" id="invoiceAmount" />
+                </div>
+                <div class="field-row">
+                  <label class="f-label">Total Nos</label>
+                  <input type="text" id="totalNOS" />
+                </div>
+                <div class="field-row" style="grid-column: 1 / -1;">
+                  <label class="f-label">Transport</label>
+                  <div class="field-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+                    <div class="field-row">
+                      <label class="f-label">Name</label>
+                      <input type="text" id="transportName" />
+                    </div>
+                    <div class="field-row">
+                      <label class="f-label">Vehicle Number</label>
+                      <input type="text" id="vehicleNumber" />
+                    </div>
+                    <div class="field-row">
+                      <label class="f-label">Driver's Name</label>
+                      <input type="text" id="driverName" />
+                    </div>
+                    <div class="field-row">
+                      <label class="f-label">Driver's Mobile Number</label>
+                      <input type="phone" id="driverPhone" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="hbox" style="margin-top: 8px">
+                <button class="primary" id="prepareBtn">
+                  Generate Invoice Ack Rec
+                </button>
+                <span id="prepareMsg" class="muted"></span>
+              </div>
+            </fieldset>
+
+            <fieldset id="buyerLinkFieldset" style="display: none">
+              <legend>Buyer Acknowledgement Link</legend>
+              <p class="muted">
+                Share this link with the buyer — no login required. They'll
+                trigger their own OTP to seal the document.
+              </p>
+              <div class="hbox">
+                <div class="qr-wrap">
+                  <canvas id="buyerLinkQr" width="120" height="120"></canvas>
+                  <span class="qr-caption"
+                    >Scan this QR to open the buyer acknowledgement page on any
+                    device.</span
+                  >
+                </div>
+                <div style="flex: 1; min-width: 220px">
+                  <input
+                    type="text"
+                    id="buyerLinkBox"
+                    readonly
+                    style="flex: 1"
+                  />
+                  <div class="hbox" style="margin-top: 6px">
+                    <button id="copyLinkBtn">Copy Link</button>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset id="statusFieldset" style="display: none">
+              <legend>Verification Status (mirrors buyer's side)</legend>
+              <div id="statusBox"></div>
+            </fieldset>
           </div>
         </div>
-      </fieldset>
+      </div>
 
-      <fieldset id="statusFieldset" style="display:none;">
-        <legend>Verification Status (mirrors buyer's side)</legend>
-        <div id="statusBox"></div>
-      </fieldset>
+      <div class="statusbar">
+        <div class="grow" id="userStatus">Ready</div>
+        <div>Kranti v0.2 Prototype</div>
+        <div id="clockBox">--:--</div>
+      </div>
     </div>
-    </div>
-  </div>
 
-  <div class="statusbar">
-    <div class="grow" id="userStatus">Ready</div>
-    <div>Kranti v0.2 Prototype</div>
-    <div id="clockBox">--:--</div>
-  </div>
-</div>
-
-<script src="js/qr.js"></script>
-  <script src="js/nav.js"></script>
-  <script src="js/bill-generation.js"></script>
-  <script src="js/section-collapse.js"></script>
-</body>
+    <script src="js/qr.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/bill-generation.js"></script>
+    <script src="js/section-collapse.js"></script>
+  </body>
 </html>

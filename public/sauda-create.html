@@ -78,7 +78,8 @@ Each buyer added below becomes its own independent deal — its own Sale Order, 
 
       <div class="field-row">
         <label class="f-label">Lifting Date (window start)</label>
-        <input type="date" class="liftingDate">
+        <input type="hidden" class="liftingDate">
+        <div class="liftingDateDisplay muted"></div>
       </div>
       <div class="field-row">
         <label class="f-label">Last Lifting Date (window end)</label>
@@ -105,13 +106,17 @@ Each buyer added below becomes its own independent deal — its own Sale Order, 
 
     <fieldset style="margin-top:10px;">
       <legend>Items</legend>
-      <div class="hbox" style="margin-bottom:8px;">
+      <div class="hbox" style="margin-bottom:8px; align-items:flex-start; gap:8px;">
         <label class="muted">Quick add from Best Buys:</label>
-        <select class="bestBuySelect" style="max-width:240px;"></select>
+        <div class="bestBuy-picker" style="position:relative; min-width:260px; max-width:320px;">
+          <input type="text" class="bestBuySearch" placeholder="Search Best Buy..." autocomplete="off" style="width:100%;">
+          <input type="hidden" class="bestBuyId">
+          <div class="bestBuyResults" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #d0d7de; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,.08); z-index:10; max-height:220px; overflow:auto;"></div>
+        </div>
         <button type="button" class="addBestBuyBtn">Add</button>
       </div>
 <table class="grid">
-        <thead><tr><th>Sr. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th><th></th></tr></thead>
+        <thead><tr><th>Sl. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th><th></th></tr></thead>
         <tbody class="itemsBody"></tbody>
       </table>
       <button type="button" class="addItemRowBtn" style="margin-top:8px;">+ Add Item</button>

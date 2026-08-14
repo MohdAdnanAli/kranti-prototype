@@ -20,7 +20,7 @@
   const statusLabels = {
     draft: ['Draft', 'neutral'],
     so_generated: ['SO Generated', 'warn'],
-    verified: ['Verified', 'ok'],
+    verified: ['SO Verified', 'ok'],
     disputed: ['Disputed', 'danger'],
   };
   const statusTbody = document.querySelector('#statusTable tbody');

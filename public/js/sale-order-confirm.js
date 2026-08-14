@@ -58,7 +58,7 @@ function render(d) {
     <fieldset>
       <legend>Items</legend>
       <table class="grid">
-        <thead><tr><th>Sr. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th></tr></thead>
+        <thead><tr><th>Sl. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th></tr></thead>
         <tbody>
           ${items.map((i, idx) => `<tr><td class="center">${idx + 1}</td><td>${i.product_name}</td><td>${i.description || ''}</td><td>${i.hsn}</td>
             <td class="right">${i.qty}</td><td>${i.unit}</td>

@@ -43,11 +43,47 @@ const seller = d.seller || {};
     ? `<b>${d.so.transporter_name}</b><br>${d.so.transporter_phone || ''}${d.so.transporter_email ? '<br>' + d.so.transporter_email : ''}`
     : `<span class="muted">No transporter attached</span>`;
 
-document.getElementById('billItems').innerHTML = d.items.map((i, idx) => `
-    <tr><td class="center">${idx + 1}</td><td>${i.product_name}</td><td>${i.description || ''}</td><td>${i.hsn}</td>
-      <td class="right">${i.qty}</td><td>${i.unit}</td>
-      <td class="right">${i.price.toLocaleString('en-IN')}</td></tr>
-  `).join('');
+  const items = Array.isArray(d.items) ? d.items : [];
+  const billTotal = items.reduce((sum, i) => sum + (Number(i.qty || 0) * Number(i.price || 0)), 0);
+  const totalNos = items.reduce((sum, i) => sum + Number(i.qty || 0), 0);
+
+  const bodyHtml = items.map((i, idx) => {
+    const itemTotal = Number(i.qty || 0) * Number(i.price || 0);
+    return `
+      <tr>
+        <td class="center">${idx + 1}</td>
+        <td>${i.product_name}</td>
+        <td>${i.description || ''}</td>
+        <td>${i.hsn}</td>
+        <td class="right">${i.qty}</td>
+        <td>${i.unit}</td>
+        <td class="right">₹${Number(i.price || 0).toLocaleString('en-IN')}</td>
+        <td class="right"><b>₹${itemTotal.toLocaleString('en-IN')}</b></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('billItems').innerHTML = bodyHtml
+    ? `${bodyHtml}<tr><td colspan="7" class="right"><b>Grand Total</b></td><td class="right"><b>₹${billTotal.toLocaleString('en-IN')}</b></td></tr>`
+    : '<tr><td colspan="8" class="muted">No items in this bill.</td></tr>';
+
+  const invoiceAmount = document.getElementById('invoiceAmount');
+  if (invoiceAmount) invoiceAmount.value = `₹${billTotal.toLocaleString('en-IN')}`;
+
+  const totalNosInput = document.getElementById('totalNOS');
+  if (totalNosInput) totalNosInput.value = totalNos.toLocaleString('en-IN');
+
+  const transportName = document.getElementById('transportName');
+  if (transportName) transportName.value = d.so.transporter_name || '';
+
+  const vehicleNumber = document.getElementById('vehicleNumber');
+  if (vehicleNumber) vehicleNumber.value = d.so.transporter_vehicle_info || '';
+
+  const driverName = document.getElementById('driverName');
+  if (driverName) driverName.value = d.so.transporter_name || '';
+
+  const driverPhone = document.getElementById('driverPhone');
+  if (driverPhone) driverPhone.value = d.so.transporter_phone || '';
 
   if (d.ack && d.ack.invoice_number) {
     document.getElementById('invoiceNumber').value = d.ack.invoice_number;

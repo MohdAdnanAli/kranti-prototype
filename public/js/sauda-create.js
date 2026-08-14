@@ -58,7 +58,11 @@ function restoreDraft() {
       block.querySelector('.buyerSearch').value = leg.buyer_search;
     }
     if (leg.delivery_condition) block.querySelector('.deliveryCondition').value = leg.delivery_condition;
-    if (leg.lifting_date) block.querySelector('.liftingDate').value = leg.lifting_date;
+    if (leg.lifting_date) {
+      block.querySelector('.liftingDate').value = leg.lifting_date;
+      const disp = block.querySelector('.liftingDateDisplay');
+      if (disp) disp.textContent = formatDateDisplay(leg.lifting_date);
+    }
     if (leg.last_lifting_date) block.querySelector('.lastLiftingDate').value = leg.last_lifting_date;
     if (leg.payment_type) block.querySelector('.paymentType').value = leg.payment_type;
     if (leg.advance_pct != null) block.querySelector('.advancePct').value = leg.advance_pct;
@@ -92,6 +96,14 @@ function todayIso() {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function formatDateDisplay(iso) {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString();
+  } catch (e) { return iso; }
 }
 
 // Build a search-as-you-type buyer picker inside one leg block.
@@ -154,8 +166,79 @@ function initBuyerPicker(block) {
     if (!picker.contains(e.target)) picker.classList.remove('open');
   });
 }
-function bestBuyOptionsHtml() {
-  return lookups.bestBuys.map(b => `<option value="${b.id}">${b.product_name}</option>`).join('');
+function initBestBuyPicker(block) {
+  const picker = block.querySelector('.bestBuy-picker');
+  const search = block.querySelector('.bestBuySearch');
+  const idInput = block.querySelector('.bestBuyId');
+  const results = block.querySelector('.bestBuyResults');
+
+  function renderResults(query) {
+    const q = (query || '').trim().toLowerCase();
+    const matches = lookups.bestBuys.filter(item =>
+      !q ||
+      (item.product_name || '').toLowerCase().includes(q) ||
+      (item.description || '').toLowerCase().includes(q) ||
+      (item.hsn || '').toLowerCase().includes(q)
+    );
+
+    if (matches.length === 0) {
+      results.innerHTML = '<div class="bestBuy-empty">No matching Best Buy item.</div>';
+      results.style.display = 'block';
+      picker.classList.add('open');
+      return;
+    }
+
+    results.innerHTML = matches.slice(0, 8).map(item => `
+      <div class="bestBuy-result" data-id="${item.id}">
+        <div>${item.product_name}</div>
+        <div class="muted-item">${item.description ? item.description : 'No description'}${item.hsn ? ' · HSN ' + item.hsn : ''}</div>
+      </div>
+    `).join('');
+    results.style.display = 'block';
+    picker.classList.add('open');
+    results.querySelectorAll('.bestBuy-result').forEach(el => {
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectBestBuy(el.dataset.id);
+      });
+    });
+  }
+
+  function selectBestBuy(id) {
+    const item = lookups.bestBuys.find(b => String(b.id) === String(id));
+    if (!item) return;
+    idInput.value = item.id;
+    search.value = item.product_name;
+    results.style.display = 'none';
+    picker.classList.remove('open');
+    search.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  search.addEventListener('input', () => {
+    idInput.value = '';
+    renderResults(search.value);
+  });
+  search.addEventListener('focus', () => renderResults(search.value));
+  search.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      results.style.display = 'none';
+      picker.classList.remove('open');
+      return;
+    }
+    if (e.key === 'Enter') {
+      const first = results.querySelector('.bestBuy-result[data-id]');
+      if (first) {
+        e.preventDefault();
+        selectBestBuy(first.dataset.id);
+      }
+    }
+  });
+  document.addEventListener('mousedown', (e) => {
+    if (!picker.contains(e.target)) {
+      results.style.display = 'none';
+      picker.classList.remove('open');
+    }
+  });
 }
 
 function addLeg() {
@@ -165,13 +248,16 @@ function addLeg() {
   const block = node.querySelector('.leg-block');
   block.dataset.legId = legCount;
   block.querySelector('.leg-num').textContent = '#' + legCount;
-  block.querySelector('.bestBuySelect').innerHTML = bestBuyOptionsHtml();
 
   // Auto-fill the Lifting Date (window start) with today's date.
-  block.querySelector('.liftingDate').value = todayIso();
+  const iso = todayIso();
+  block.querySelector('.liftingDate').value = iso;
+  const ld = block.querySelector('.liftingDateDisplay');
+  if (ld) ld.textContent = formatDateDisplay(iso);
 
   // Buyer search picker.
   initBuyerPicker(block);
+  initBestBuyPicker(block);
 
   // Payment ratio auto-complement
   const advInput = block.querySelector('.advancePct');
@@ -190,9 +276,20 @@ function addLeg() {
 
   block.querySelector('.addItemRowBtn').addEventListener('click', () => addItemRow(block));
   block.querySelector('.addBestBuyBtn').addEventListener('click', () => {
-    const id = parseInt(block.querySelector('.bestBuySelect').value);
+    const id = parseInt(block.querySelector('.bestBuyId').value, 10);
+    if (!id || Number.isNaN(id)) {
+      alert('Search and select a Best Buy item first.');
+      return;
+    }
     const item = lookups.bestBuys.find(b => b.id === id);
-    if (item) addItemRow(block, item);
+    if (item) {
+      addItemRow(block, item);
+      block.querySelector('.bestBuySearch').value = '';
+      block.querySelector('.bestBuyId').value = '';
+      block.querySelector('.bestBuyResults').innerHTML = '';
+      block.querySelector('.bestBuyResults').style.display = 'none';
+      block.querySelector('.bestBuy-picker').classList.remove('open');
+    }
   });
 
   document.getElementById('legsContainer').appendChild(node);
