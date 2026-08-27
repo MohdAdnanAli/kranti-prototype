@@ -47,14 +47,48 @@ body {
 
 /* ---- App window shell ---- */
 .app-window {
-  max-width: 1180px;
+  /* max-width: 1180px;
   margin: 18px auto 40px;
   background: var(--face);
   border-top: 1px solid var(--hl);
   border-left: 1px solid var(--hl);
   border-right: 1px solid var(--dark-shadow);
   border-bottom: 1px solid var(--dark-shadow);
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.35);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.35); */
+}
+
+button {
+  position: relative;
+  padding: 14px 28px;
+  background: linear-gradient(145deg, #4CAF50, #3E8E41); /* subtle gradient for depth */
+  border: none;
+  border-radius: 10px; /* softer rounded edges */
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+/* Top header bar resembling COC style */
+button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  height: 8px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0));
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Additional hover effect for a more interactive feel */
+button:hover {
+  background: linear-gradient(145deg, #5ACF60, #4E9E4E);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 6px 12px rgba(0,0,0,0.4);
 }
 
 .titlebar {
