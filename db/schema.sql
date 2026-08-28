@@ -61,6 +61,7 @@ CREATE TABLE best_buy_item (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     org_id INTEGER REFERENCES organization(id),
     product_name TEXT NOT NULL,
+    description TEXT,
     hsn TEXT,
     unit TEXT,
     default_rate REAL
@@ -99,12 +100,13 @@ CREATE TABLE deal (
 CREATE TABLE deal_item (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     deal_id INTEGER REFERENCES deal(id),
-    product_name TEXT NOT NULL,
-    description TEXT,             -- free-text item description
+    best_buy_id INTEGER REFERENCES best_buy_item(id),  -- required: item must come from the Best Buy catalog
+    product_name TEXT NOT NULL,   -- snapshotted from best_buy_item at time of order (catalog may change later)
+    description TEXT,             -- snapshotted from best_buy_item
     hsn TEXT,
     qty REAL,
     unit TEXT,                    -- UOM (Unit of Measure)
-    price REAL                    -- unit rate
+    price REAL                    -- unit rate (editable per deal, defaults from best_buy_item.default_rate)
 );
 
 -- SALE ORDER: ID #2 of the 4-ID system: so_id

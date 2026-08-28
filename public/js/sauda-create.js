@@ -24,6 +24,7 @@ function saveDraft() {
     advance_pct: block.querySelector('.advancePct').value,
     credit_pct: block.querySelector('.creditPct').value,
     items: Array.from(block.querySelectorAll('.itemsBody tr')).map(tr => ({
+      best_buy_id: tr.querySelector('.i-best-buy-id').value,
       name: tr.querySelector('.i-name').value,
       description: tr.querySelector('.i-description').value,
       hsn: tr.querySelector('.i-hsn').value,
@@ -70,7 +71,9 @@ function restoreDraft() {
     // Replace the single default empty row with the saved rows.
     block.querySelector('.itemsBody').innerHTML = '';
 (leg.items || []).forEach(item => {
+      if (!item.best_buy_id) return; // drop any legacy free-typed rows from an older draft
       addItemRow(block, {
+        id: item.best_buy_id,
         product_name: item.name,
         description: item.description,
         hsn: item.hsn,
@@ -274,7 +277,6 @@ function addLeg() {
     window.location.href = 'profile.html#buyers';
   });
 
-  block.querySelector('.addItemRowBtn').addEventListener('click', () => addItemRow(block));
   block.querySelector('.addBestBuyBtn').addEventListener('click', () => {
     const id = parseInt(block.querySelector('.bestBuyId').value, 10);
     if (!id || Number.isNaN(id)) {
@@ -292,9 +294,13 @@ function addLeg() {
     }
   });
 
+  // Items now must come from the Best Buy catalog only. If the org hasn't
+  // stocked any Best Buy products yet, surface a notice pointing at Profile
+  // instead of a silently-empty, unusable picker.
+  const notice = block.querySelector('.bestBuyEmptyNotice');
+  if (notice) notice.style.display = lookups.bestBuys.length === 0 ? '' : 'none';
+
   document.getElementById('legsContainer').appendChild(node);
-  const insertedBlock = document.getElementById('legsContainer').lastElementChild;
-  addItemRow(insertedBlock);
 }
 
 function renumberItems(block) {
@@ -305,16 +311,21 @@ function renumberItems(block) {
 }
 
 function addItemRow(block, prefill) {
+  // Every row is now sourced from the Best Buy catalog — prefill is required.
+  if (!prefill || !prefill.id) return;
   const tbody = block.querySelector('.itemsBody');
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td class="i-sr center"></td>
-    <td><input type="text" class="i-name" value="${prefill?.product_name || ''}"></td>
-    <td><input type="text" class="i-description" value="${prefill?.description || ''}" placeholder="Item description"></td>
-    <td><input type="text" class="i-hsn" value="${prefill?.hsn || ''}" style="width:90px;"></td>
-    <td><input type="number" class="i-qty" value="${prefill?.qty || ''}" style="width:80px;"></td>
-    <td><input type="text" class="i-unit" value="${prefill?.unit || ''}" style="width:90px;"></td>
-    <td><input type="number" class="i-price" value="${prefill?.default_rate || ''}" style="width:100px;"></td>
+    <td>
+      <input type="hidden" class="i-best-buy-id" value="${prefill.id}">
+      <input type="text" class="i-name" value="${prefill.product_name || ''}" readonly>
+    </td>
+    <td><input type="text" class="i-description" value="${prefill.description || ''}" readonly></td>
+    <td><input type="text" class="i-hsn" value="${prefill.hsn || ''}" style="width:90px;" readonly></td>
+    <td><input type="number" class="i-qty" value="${prefill.qty || ''}" style="width:80px;" min="0" step="any"></td>
+    <td><input type="text" class="i-unit" value="${prefill.unit || ''}" style="width:90px;" readonly></td>
+    <td><input type="number" class="i-price" value="${prefill.default_rate ?? prefill.price ?? ''}" style="width:100px;" min="0" step="any"></td>
     <td><button type="button" class="removeItemBtn">Remove</button></td>
   `;
   tr.querySelector('.removeItemBtn').addEventListener('click', () => {
@@ -336,14 +347,16 @@ document.getElementById('submitOrderBtn').addEventListener('click', async () => 
     const buyer_id = block.querySelector('.buyerId').value;
     if (!buyer_id) { alert('Every buyer leg needs a buyer selected.'); return; }
 const items = Array.from(block.querySelectorAll('.itemsBody tr')).map(tr => ({
+      best_buy_id: parseInt(tr.querySelector('.i-best-buy-id').value, 10) || null,
       product_name: tr.querySelector('.i-name').value,
       description: tr.querySelector('.i-description').value,
       hsn: tr.querySelector('.i-hsn').value,
       qty: parseFloat(tr.querySelector('.i-qty').value) || 0,
       unit: tr.querySelector('.i-unit').value,
       price: parseFloat(tr.querySelector('.i-price').value) || 0,
-    })).filter(i => i.product_name);
-    if (items.length === 0) { alert('Each buyer leg needs at least one item.'); return; }
+    })).filter(i => i.product_name && i.best_buy_id);
+    if (items.length === 0) { alert('Each buyer leg needs at least one item added from the Best Buy catalog.'); return; }
+    if (items.some(i => !i.qty)) { alert('Every item needs a quantity greater than 0.'); return; }
 
     legs.push({
       buyer_id,

@@ -124,15 +124,15 @@ app.delete('/api/terms/:id', (req, res) => {
 });
 
 app.post('/api/best-buy', (req, res) => {
-  const { product_name, hsn, unit, default_rate } = req.body;
-  const info = db.prepare('INSERT INTO best_buy_item (org_id, product_name, hsn, unit, default_rate) VALUES (1, ?, ?, ?, ?)')
-    .run(product_name, hsn, unit, parseFloat(default_rate) || 0);
+  const { product_name, description, hsn, unit, default_rate } = req.body;
+  const info = db.prepare('INSERT INTO best_buy_item (org_id, product_name, description, hsn, unit, default_rate) VALUES (1, ?, ?, ?, ?, ?)')
+    .run(product_name, description || '', hsn, unit, parseFloat(default_rate) || 0);
   res.json(db.prepare('SELECT * FROM best_buy_item WHERE id = ?').get(info.lastInsertRowid));
 });
 app.put('/api/best-buy/:id', (req, res) => {
-  const { product_name, hsn, unit, default_rate } = req.body;
-  db.prepare('UPDATE best_buy_item SET product_name=?, hsn=?, unit=?, default_rate=? WHERE id=? AND org_id=1')
-    .run(product_name, hsn, unit, parseFloat(default_rate) || 0, req.params.id);
+  const { product_name, description, hsn, unit, default_rate } = req.body;
+  db.prepare('UPDATE best_buy_item SET product_name=?, description=?, hsn=?, unit=?, default_rate=? WHERE id=? AND org_id=1')
+    .run(product_name, description || '', hsn, unit, parseFloat(default_rate) || 0, req.params.id);
   res.json(db.prepare('SELECT * FROM best_buy_item WHERE id = ?').get(req.params.id));
 });
 app.delete('/api/best-buy/:id', (req, res) => {
@@ -176,6 +176,22 @@ app.post('/api/order', (req, res) => {
   const { agent_id, notes, legs } = req.body;
   if (!legs || !legs.length) return res.status(400).json({ error: 'At least one buyer leg is required.' });
 
+  // Every line item must come from the Best Buy catalog — validate before writing anything.
+  for (const leg of legs) {
+    if (!leg.items || !leg.items.length) {
+      return res.status(400).json({ error: 'Every buyer leg needs at least one item.' });
+    }
+    for (const i of leg.items) {
+      if (!i.best_buy_id) {
+        return res.status(400).json({ error: 'Every item must be selected from the Best Buy catalog.' });
+      }
+      const exists = db.prepare('SELECT id FROM best_buy_item WHERE id = ? AND org_id = 1').get(i.best_buy_id);
+      if (!exists) {
+        return res.status(400).json({ error: `Best Buy item ${i.best_buy_id} not found in catalog.` });
+      }
+    }
+  }
+
   const orderInfo = db.prepare(`INSERT INTO order_group (org_id, order_code, agent_id, created_by, notes) VALUES (1, 'PENDING', ?, 1, ?)`)
     .run(agent_id || null, notes || '');
   const orderId = orderInfo.lastInsertRowid;
@@ -185,7 +201,7 @@ app.post('/api/order', (req, res) => {
   const insDeal = db.prepare(`INSERT INTO deal
     (order_id, org_id, buyer_id, created_by, delivery_condition, lifting_date, last_lifting_date, payment_type, advance_pct, credit_pct, status)
     VALUES (?, 1, ?, 1, ?, ?, ?, ?, ?, ?, 'draft')`);
-  const insItem = db.prepare(`INSERT INTO deal_item (deal_id, product_name, description, hsn, qty, unit, price) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+  const insItem = db.prepare(`INSERT INTO deal_item (deal_id, best_buy_id, product_name, description, hsn, qty, unit, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
 
   const dealIds = [];
   legs.forEach(leg => {
@@ -195,7 +211,7 @@ app.post('/api/order', (req, res) => {
     );
     const dealId = info.lastInsertRowid;
     dealIds.push(dealId);
-    (leg.items || []).forEach(i => insItem.run(dealId, i.product_name, i.description, i.hsn, i.qty, i.unit, i.price));
+    (leg.items || []).forEach(i => insItem.run(dealId, i.best_buy_id, i.product_name, i.description, i.hsn, i.qty, i.unit, i.price));
   });
 
   res.json({ ok: true, orderId, orderCode, dealIds });

@@ -107,19 +107,21 @@ Each buyer added below becomes its own independent deal — its own Sale Order, 
     <fieldset style="margin-top:10px;">
       <legend>Items</legend>
       <div class="hbox" style="margin-bottom:8px; align-items:flex-start; gap:8px;">
-        <label class="muted">Quick add from Best Buys:</label>
+        <label class="muted">Add product from catalog:</label>
         <div class="bestBuy-picker" style="position:relative; min-width:260px; max-width:320px;">
-          <input type="text" class="bestBuySearch" placeholder="Search Best Buy..." autocomplete="off" style="width:100%;">
+          <input type="text" class="bestBuySearch" placeholder="Search Best Buy catalog..." autocomplete="off" style="width:100%;">
           <input type="hidden" class="bestBuyId">
           <div class="bestBuyResults" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #d0d7de; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,.08); z-index:10; max-height:220px; overflow:auto;"></div>
         </div>
         <button type="button" class="addBestBuyBtn">Add</button>
       </div>
+      <p class="muted bestBuyEmptyNotice" style="display:none;">
+        No products in your Best Buy catalog yet. <a href="profile.html#bestbuys">Add products in Profile</a> first — items can only be added from the catalog.
+      </p>
 <table class="grid">
         <thead><tr><th>Sl. No.</th><th>Product Name</th><th>Description</th><th>HSN Code</th><th>Quantity</th><th>UOM</th><th>Unit Rate (included ₹)</th><th></th></tr></thead>
         <tbody class="itemsBody"></tbody>
       </table>
-      <button type="button" class="addItemRowBtn" style="margin-top:8px;">+ Add Item</button>
     </fieldset>
   </fieldset>
 </template>

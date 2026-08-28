@@ -258,6 +258,7 @@ document.getElementById('addTcBtn').addEventListener('click', async () => {
 function renderBestBuys() {
   const cols = [
     { key: 'product_name', label: 'Product' },
+    { key: 'description', label: 'Description' },
     { key: 'hsn', label: 'HSN' },
     { key: 'unit', label: 'Unit' },
     { key: 'default_rate', label: 'Default Rate (₹)', type: 'number' },
@@ -286,17 +287,23 @@ document.getElementById('saveNoteBtn').addEventListener('click', async () => {
 // Create page), expand the Buyers section, scroll to it, and focus the first
 // "add" input so the user can immediately create a new buyer.
 function handleBuyersHash() {
-  if (window.location.hash !== '#buyers') return;
-  const el = document.getElementById('buyersSection');
+  const hash = window.location.hash;
+  const targets = {
+    '#buyers': { sectionId: 'buyersSection', firstInputSelector: '#buyerCrud .add-row input' },
+    '#bestbuys': { sectionId: 'bestbuys', firstInputSelector: '#bestBuyCrud .add-row input' },
+  };
+  const target = targets[hash];
+  if (!target) return;
+  const el = document.getElementById(target.sectionId);
   if (!el) return;
   // Expand the section in case it was collapsed by section-collapse.js.
   el.classList.remove('collapsed');
   const body = el.nextElementSibling;
   if (body && body.classList.contains('section-body')) body.style.display = '';
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // Focus the first add-row input once the buyers table is rendered.
+  // Focus the first "add" input once the table is rendered.
   const focusAdd = () => {
-    const input = document.querySelector('#buyerCrud .add-row input');
+    const input = document.querySelector(target.firstInputSelector);
     if (input) input.focus();
   };
   setTimeout(focusAdd, 150);

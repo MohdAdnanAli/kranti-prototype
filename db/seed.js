@@ -60,13 +60,13 @@ transporters.forEach(t => insTrans.run(...t));
 
 // --- Best Buys ---
 const bestBuys = [
-  ['Basmati Rice 1121 Steam', '10063020', 'Quintal', 8200],
-  ['Toor Dal (Arhar)', '07131000', 'Quintal', 11500],
-  ['Refined Soybean Oil', '15071000', 'Tin (15kg)', 2150],
-  ['Wheat Sharbati', '10019900', 'Quintal', 2850],
-  ['Sugar S-30', '17019910', 'Quintal', 4100],
+  ['Basmati Rice 1121 Steam', 'Premium long-grain 1121 steam basmati, sorted & cleaned', '10063020', 'Quintal', 8200],
+  ['Toor Dal (Arhar)', 'Split pigeon pea, double-polished, machine-cleaned', '07131000', 'Quintal', 11500],
+  ['Refined Soybean Oil', 'RBD refined soybean oil, 15 kg tin pack', '15071000', 'Tin (15kg)', 2150],
+  ['Wheat Sharbati', 'A1-grade sharbati wheat, moisture <10%, free of stones', '10019900', 'Quintal', 2850],
+  ['Sugar S-30', 'S-30 grade refined white crystal sugar', '17019910', 'Quintal', 4100],
 ];
-const insBB = db.prepare(`INSERT INTO best_buy_item (org_id, product_name, hsn, unit, default_rate) VALUES (1, ?, ?, ?, ?)`);
+const insBB = db.prepare(`INSERT INTO best_buy_item (org_id, product_name, description, hsn, unit, default_rate) VALUES (1, ?, ?, ?, ?, ?)`);
 bestBuys.forEach(b => insBB.run(...b));
 
 // --- Terms & Conditions ---
@@ -110,17 +110,18 @@ insDeal.run(4, 1, 'EX', '2026-08-09', '2026-08-11', 'advance', 30, 70, '', 'so_g
 insDeal.run(5, 5, 'EX', '2026-08-20', '2026-08-23', 'credit', 0, 100, '30 days credit', 'disputed');// deal 6 -> order5, Rasoi Basics
 
 // --- Deal Items ---
-// Columns: deal_id, product_name, description, hsn, qty, unit, price
+// Columns: deal_id, best_buy_id, product_name, description, hsn, qty, unit, price
+// best_buy_id 1=Basmati Rice, 2=Toor Dal, 3=Refined Soybean Oil, 4=Wheat Sharbati, 5=Sugar S-30
 const items = [
-  [1, 'Basmati Rice 1121 Steam', 'Premium long-grain 1121 steam basmati, sorted & cleaned', '10063020', 50, 'Quintal', 8200],
-  [1, 'Toor Dal (Arhar)', 'Split pigeon pea, double-polished, machine-cleaned', '07131000', 20, 'Quintal', 11500],
-  [2, 'Refined Soybean Oil', 'RBD refined soybean oil, 15 kg tin pack', '15071000', 200, 'Tin (15kg)', 2150],
-  [3, 'Wheat Sharbati', 'A1-grade sharbati wheat, moisture <10%, free of stones', '10019900', 100, 'Quintal', 2850],
-  [4, 'Sugar S-30', 'S-30 grade refined white crystal sugar', '17019910', 80, 'Quintal', 4100],
-  [5, 'Basmati Rice 1121 Steam', 'Premium long-grain 1121 steam basmati, sorted & cleaned', '10063020', 30, 'Quintal', 8250],
-  [6, 'Toor Dal (Arhar)', 'Split pigeon pea, double-polished, machine-cleaned', '07131000', 40, 'Quintal', 11450],
+  [1, 1, 'Basmati Rice 1121 Steam', 'Premium long-grain 1121 steam basmati, sorted & cleaned', '10063020', 50, 'Quintal', 8200],
+  [1, 2, 'Toor Dal (Arhar)', 'Split pigeon pea, double-polished, machine-cleaned', '07131000', 20, 'Quintal', 11500],
+  [2, 3, 'Refined Soybean Oil', 'RBD refined soybean oil, 15 kg tin pack', '15071000', 200, 'Tin (15kg)', 2150],
+  [3, 4, 'Wheat Sharbati', 'A1-grade sharbati wheat, moisture <10%, free of stones', '10019900', 100, 'Quintal', 2850],
+  [4, 5, 'Sugar S-30', 'S-30 grade refined white crystal sugar', '17019910', 80, 'Quintal', 4100],
+  [5, 1, 'Basmati Rice 1121 Steam', 'Premium long-grain 1121 steam basmati, sorted & cleaned', '10063020', 30, 'Quintal', 8250],
+  [6, 2, 'Toor Dal (Arhar)', 'Split pigeon pea, double-polished, machine-cleaned', '07131000', 40, 'Quintal', 11450],
 ];
-const insItem = db.prepare(`INSERT INTO deal_item (deal_id, product_name, description, hsn, qty, unit, price) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+const insItem = db.prepare(`INSERT INTO deal_item (deal_id, best_buy_id, product_name, description, hsn, qty, unit, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
 items.forEach(i => insItem.run(...i));
 
 // --- Sale Orders ---
